@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>✨ Magic Treasure Cups ✨</title>
+<style>
+  :root {
+    --cup-w: 150px;
+    --cup-h: 190px;
+    --lift: 135px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", sans-serif;
+    user-select: none;
+  }
+
+  body {
+    background: linear-gradient(160deg, #2a1a4a 0%, #4a2a6a 40%, #6a3a8a 100%);
+    color: #fff;
+    cursor: none;
+  }
+
+  /* twinkly star background */
+  .stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .star {
+    position: absolute; font-size: 14px; opacity: 0.5;
+    animation: twinkle 3s ease-in-out infinite;
+  }
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 0.9; transform: scale(1.2); }
+  }
+
+  /* ---------- magic wand cursor ---------- */
+  #wand {
+    position: fixed; z-index: 9999; font-size: 48px; pointer-events: none;
+    transform: translate(-6px, -42px) rotate(15deg);
+    transition: transform 0.08s ease-out;
+    will-change: transform, left, top;
+    filter: drop-shadow(0 0 6px gold);
+  }
+  #wand.zap { transform: translate(-6px, -42px) rotate(15deg) scale(1.4); }
+
+  /* ---------- header ---------- */
+  header { position: relative; z-index: 1; text-align: center; padding-top: 18px; }
+  h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    background: linear-gradient(90deg, #ff4d4d, #ff9a3d, #ffe24d, #4dff7a, #4dd2ff, #a64dff, #ff4dd2);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.25); margin-bottom: 6px;
+  }
+  #status {
+    font-size: clamp(18px, 3vw, 26px); min-height: 34px;
+    color: #ffe9a8; text-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+
+  /* ---------- stage ---------- */
+  #stage { position: relative; z-index: 1; width: 100%; height: 60vh; margin-top: 10px; }
+
+  /* the magic floor line so treasures look like they sit on something */
+  .floor {
+    position: absolute; left: 0; right: 0; bottom: 40px; height: 4px; z-index: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+  }
+
+  /* ---------- treasure (sits ON the floor, cup rises off it) ---------- */
+  .treasure {
+    position: absolute; bottom: 46px; width: var(--cup-w);
+    text-align: center; z-index: 2;
+    opacity: 0; transform: scale(0.6);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+  }
+  .treasure.show { opacity: 1; transform: scale(1); }
+  .treasure .coin {
+    font-size: 60px; display: inline-block;
+    filter: drop-shadow(0 0 14px gold) drop-shadow(0 4px 4px rgba(0,0,0,.4));
+    animation: coinBob 1.4s ease-in-out infinite;
+  }
+  .treasure .gem {
+    font-size: 40px; display: inline-block;
+    filter: drop-shadow(0 0 12px #8ff) drop-shadow(0 3px 3px rgba(0,0,0,.4));
+    animation: spin 2.5s linear infinite;
+  }
+  .treasure .gem.left { animation-direction: reverse; }
+  @keyframes coinBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* glow halo behind treasure */
+  .treasure::before {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 130px; height: 130px; transform: translate(-50%,-50%);
+    background: radial-gradient(circle, rgba(255,240,160,.55), transparent 70%);
+    z-index: -1; animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:.5; } 50% { opacity:1; } }
+
+  /* ---------- the 3D cup ---------- */
+  .cup {
+    position: absolute; width: var(--cup-w); height: var(--cup-h); bottom: 40px;
+    z-index: 5;
+    transition: left 0.4s ease-in-out, transform 0.32s ease;
+  }
+  .cup.fast { transition: left 0.35s cubic-bezier(.45,0,.55,1), transform 0.32s ease; }
+  .cup.lift { transform: translateY(calc(-1 * var(--lift))); }
+  .cup.wiggle { animation: wiggle 0.45s ease; }
+  @keyframes wiggle {
+    0%,100% { transform: rotate(0); }
+    25% { transform: rotate(-5deg); }
+    75% { transform: rotate(5deg); }
+  }
+
+  /* ground shadow that stays under the cup */
+  .cup-shadow {
+    position: absolute; left: 10%; right: 10%; bottom: -10px; height: 22px;
+    background: radial-gradient(ellipse, rgba(0,0,0,.45), transparent 70%);
+    border-radius: 50%; z-index: -1;
+    transition: opacity 0.3s ease;
+  }
+  .cup.lift .cup-shadow { opacity: 0.35; transform: scale(0.8); }
+
+  .cup-body {
+    position: absolute; inset: 0;
+    /* domed, rounded cup silhouette */
+    border-radius: 48% 48% 18% 18% / 58% 58% 16% 16%;
+    background:
+      linear-gradient(95deg,
+        rgba(0,0,0,.50) 0%,
+        rgba(0,0,0,.10) 16%,
+        rgba(255,255,255,.60) 42%,
+        rgba(255,255,255,.10) 60%,
+        rgba(0,0,0,.16) 80%,
+        rgba(0,0,0,.55) 100%),
+      linear-gradient(180deg, #ff5d6c, #ff9a3d, #ffe24d 40%, #5dff8a, #4dd2ff, #9a6dff, #ff6ed2);
+    background-blend-mode: soft-light, normal;
+    box-shadow:
+      0 16px 20px -8px rgba(0,0,0,.55),
+      inset 0 -22px 30px rgba(0,0,0,.30),
+      inset 0 10px 16px rgba(255,255,255,.30);
+  }
+  /* shiny highlight near the top */
+  .cup-body::before {
+    content: ""; position: absolute; top: 12%; left: 20%;
+    width: 26px; height: 60px; border-radius: 50%;
+    background: rgba(255,255,255,.55); filter: blur(4px);
+    transform: rotate(-12deg);
+  }
+  /* hollow opening (dark rim) at the bottom */
+  .cup-body::after {
+    content: ""; position: absolute; bottom: -4px; left: 7%; right: 7%;
+    height: 20px; border-radius: 50%;
+    background: rgba(20,0,30,.6);
+    box-shadow: inset 0 5px 7px rgba(0,0,0,.7);
+  }
+
+  .cup-heart {
+    position: absolute; top: 40%; left: 0; right: 0; text-align: center;
+    font-size: 50px; z-index: 2;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.45));
+    animation: heartbeat 1.6s ease-in-out infinite;
+  }
+  @keyframes heartbeat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+
+  /* ---------- buttons ---------- */
+  #controls { position: relative; z-index: 6; text-align: center; margin-top: 6px; }
+  button {
+    font-family: inherit; font-size: 24px; padding: 14px 34px; border: none;
+    border-radius: 40px; background: linear-gradient(135deg, #ff6ec4, #7873f5);
+    color: #fff; cursor: none;
+    box-shadow: 0 6px 0 #5a4fc4, 0 10px 16px rgba(0,0,0,0.35);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    text-shadow: 0 2px 3px rgba(0,0,0,0.3);
+  }
+  button:active { transform: translateY(5px); box-shadow: 0 1px 0 #5a4fc4, 0 4px 8px rgba(0,0,0,0.35); }
+  button:disabled { opacity: 0.45; }
+
+  #levels { margin-bottom: 14px; }
+  .lvl {
+    font-size: 18px; padding: 8px 18px; margin: 0 5px;
+    background: linear-gradient(135deg, #6a6aa8, #4a4a78);
+    box-shadow: 0 4px 0 #38386a, 0 6px 10px rgba(0,0,0,0.3);
+    opacity: 0.7;
+  }
+  .lvl.active {
+    opacity: 1;
+    background: linear-gradient(135deg, #ffd34d, #ff8a3d);
+    box-shadow: 0 4px 0 #c46a1f, 0 6px 12px rgba(0,0,0,0.35);
+    transform: scale(1.08);
+  }
+
+  /* ---------- fairy ---------- */
+  #fairy-layer {
+    position: fixed; inset: 0; z-index: 8000; display: none;
+    align-items: center; justify-content: center; flex-direction: column;
+    background: rgba(20,0,40,0.45); backdrop-filter: blur(2px);
+  }
+  #fairy-layer.show { display: flex; }
+  #fairy {
+    font-size: 130px;
+    animation: floaty 2s ease-in-out infinite, popIn 0.6s ease;
+    filter: drop-shadow(0 0 24px #ffd6f5);
+  }
+  @keyframes floaty {
+    0%,100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-22px) rotate(3deg); }
+  }
+  @keyframes popIn { 0% { transform: scale(0); } 70% { transform: scale(1.25); } 100% { transform: scale(1); } }
+  #fairy-msg {
+    margin-top: 10px; font-size: clamp(34px, 7vw, 70px);
+    background: linear-gradient(90deg, #fff, #ffe24d, #ff9ad2, #fff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3); animation: popIn 0.8s ease; text-align: center;
+  }
+
+  /* confetti / sparkle particles */
+  .particle {
+    position: fixed; z-index: 8500; pointer-events: none; font-size: 28px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    0% { transform: translateY(-20px) rotate(0); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(540deg); opacity: 0.2; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<header>
+  <h1>✨ Magic Treasure Cups ✨</h1>
+  <div id="status">Tap “Start” and watch closely! 👀</div>
+</header>
+
+<div id="stage">
+  <div class="floor"></div>
+</div>
+
+<div id="controls">
+  <div id="levels">
+    <button class="lvl active" data-level="easy">🐢 Easy</button>
+    <button class="lvl" data-level="medium">🐰 Medium</button>
+    <button class="lvl" data-level="hard">🚀 Hard</button>
+  </div>
+  <button id="startBtn">▶ Start</button>
+</div>
+
+<div id="wand">🪄</div>
+
+<div id="fairy-layer">
+  <div id="fairy">🧚</div>
+  <div id="fairy-msg">Congratulations!</div>
+</div>
+
+<script>
+/* ============================================================
+   Magic Treasure Cups — shell game for a 5 year old
+   ============================================================ */
+
+const NUM_CUPS = 3;
+
+/* difficulty presets — Easy is nice and slow for little ones */
+const LEVELS = {
+  easy:   { seconds: 6,  swapMs: 750, speedup: 0,  revealMs: 3000 },
+  medium: { seconds: 9,  swapMs: 480, speedup: 4,  revealMs: 2400 },
+  hard:   { seconds: 12, swapMs: 360, speedup: 7,  revealMs: 1900 },
+};
+let level = 'easy';
+
+const stage = document.getElementById('stage');
+const statusEl = document.getElementById('status');
+const startBtn = document.getElementById('startBtn');
+const wand = document.getElementById('wand');
+const fairyLayer = document.getElementById('fairy-layer');
+
+let cups = [];        // cup elements, .dataset.slot = current slot
+let treasureEl = null;
+let treasureSlot = 0; // which SLOT currently holds the treasure
+let canPick = false;
+let busy = false;
+
+/* ---- twinkly stars ---- */
+(function makeStars(){
+  const s = document.getElementById('stars');
+  const glyphs = ['⭐','✨','🌟','💫','·'];
+  for (let i=0;i<40;i++){
+    const el = document.createElement('div');
+    el.className = 'star';
+    el.textContent = glyphs[Math.floor(Math.random()*glyphs.length)];
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.top = Math.random()*100 + 'vh';
+    el.style.animationDelay = (Math.random()*3) + 's';
+    s.appendChild(el);
+  }
+})();
+
+/* ---- wand follows the mouse ---- */
+window.addEventListener('mousemove', (e) => {
+  wand.style.left = e.clientX + 'px';
+  wand.style.top  = e.clientY + 'px';
+});
+window.addEventListener('mousedown', () => wand.classList.add('zap'));
+window.addEventListener('mouseup',   () => setTimeout(()=>wand.classList.remove('zap'), 120));
+
+/* ---- layout helpers ---- */
+function slotPositions() {
+  const w = stage.clientWidth;
+  const cupW = 150;
+  const gap = Math.min(70, Math.max(20, (w - NUM_CUPS*cupW) / (NUM_CUPS+1)));
+  const totalW = NUM_CUPS*cupW + (NUM_CUPS-1)*gap;
+  const startX = (w - totalW) / 2;
+  const pos = [];
+  for (let i=0;i<NUM_CUPS;i++) pos.push(startX + i*(cupW+gap));
+  return pos;
+}
+
+function buildScene() {
+  // wipe everything except the floor
+  cups.forEach(c => c.remove());
+  if (treasureEl) treasureEl.remove();
+  cups = [];
+
+  // the treasure (one only, lives on the floor)
+  treasureEl = document.createElement('div');
+  treasureEl.className = 'treasure';
+  treasureEl.innerHTML = `<span class="gem left">💎</span><span class="coin">🪙</span><span class="gem">💎</span>`;
+  stage.appendChild(treasureEl);
+
+  const pos = slotPositions();
+  for (let i=0;i<NUM_CUPS;i++){
+    const cup = document.createElement('div');
+    cup.className = 'cup';
+    cup.dataset.slot = i;
+    cup.style.left = pos[i] + 'px';
+    cup.innerHTML = `<div class="cup-body"></div><div class="cup-heart">💖</div><div class="cup-shadow"></div>`;
+    cup.addEventListener('click', () => onPick(cup));
+    stage.appendChild(cup);
+    cups.push(cup);
+  }
+}
+
+function cupAtSlot(slot){ return cups.find(c => +c.dataset.slot === slot); }
+
+function placeCupsToSlots() {
+  const pos = slotPositions();
+  cups.forEach(cup => { cup.style.left = pos[+cup.dataset.slot] + 'px'; });
+}
+window.addEventListener('resize', placeCupsToSlots);
+
+/* ---- reveal / hide the treasure under a given slot ---- */
+function liftCup(slot, lift) {
+  const cup = cupAtSlot(slot);
+  if (cup) cup.classList.toggle('lift', lift);
+}
+function showTreasureAt(slot) {
+  const pos = slotPositions();
+  treasureEl.style.left = pos[slot] + 'px';
+  treasureEl.classList.add('show');
+}
+function hideTreasure() { treasureEl.classList.remove('show'); }
+
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+/* ---- swap two slots ---- */
+async function swap(a, b) {
+  const cupA = cupAtSlot(a), cupB = cupAtSlot(b);
+  cupA.classList.add('fast'); cupB.classList.add('fast');
+  cupA.dataset.slot = b; cupB.dataset.slot = a;
+  placeCupsToSlots();
+  if (treasureSlot === a) treasureSlot = b;
+  else if (treasureSlot === b) treasureSlot = a;
+}
+
+/* ---- main game flow ---- */
+async function startGame() {
+  if (busy) return;
+  busy = true; canPick = false;
+  startBtn.disabled = true;
+  fairyLayer.classList.remove('show');
+
+  buildScene();
+  placeCupsToSlots();
+  hideTreasure();
+
+  treasureSlot = Math.floor(Math.random()*NUM_CUPS);
+
+  const cfg = LEVELS[level];
+
+  statusEl.textContent = 'The treasure is here! Remember the cup… 💎🪙';
+  await sleep(350);
+  liftCup(treasureSlot, true);
+  showTreasureAt(treasureSlot);
+  await sleep(cfg.revealMs);
+  liftCup(treasureSlot, false);
+  await sleep(380);
+  hideTreasure();
+  await sleep(300);
+
+  statusEl.textContent = 'Shuffling! Follow the magic cup… 🌀';
+  const endTime = Date.now() + cfg.seconds*1000;
+  let swapDuration = cfg.swapMs;
+  while (Date.now() < endTime) {
+    let a = Math.floor(Math.random()*NUM_CUPS);
+    let b = Math.floor(Math.random()*NUM_CUPS);
+    while (b === a) b = Math.floor(Math.random()*NUM_CUPS);
+    await swap(a, b);
+    const remaining = endTime - Date.now();
+    statusEl.textContent = 'Shuffling… ' + Math.max(0, Math.ceil(remaining/1000)) + 's 🌀';
+    await sleep(swapDuration);
+    if (swapDuration > 260) swapDuration -= cfg.speedup;
+  }
+
+  statusEl.textContent = 'Now! Wave your wand at the treasure cup! 🪄';
+  canPick = true; busy = false;
+  cups.forEach(c => c.classList.add('wiggle'));
+  setTimeout(()=>cups.forEach(c => c.classList.remove('wiggle')), 460);
+}
+
+/* ---- player picks a cup ---- */
+async function onPick(cup) {
+  if (!canPick) return;
+  canPick = false;
+  const pickedSlot = +cup.dataset.slot;
+  const win = (pickedSlot === treasureSlot);
+
+  liftCup(pickedSlot, true);
+  if (win) {
+    showTreasureAt(pickedSlot);
+    await sleep(600);
+    statusEl.textContent = 'You found the treasure! 🎉';
+    celebrate();
+  } else {
+    await sleep(500);
+    liftCup(treasureSlot, true);
+    showTreasureAt(treasureSlot);
+    statusEl.textContent = 'So close! The treasure was there. Try again! 💪';
+  }
+  startBtn.disabled = false;
+  startBtn.textContent = '▶ Play Again';
+}
+
+/* ---- win celebration ---- */
+function celebrate() {
+  fairyLayer.classList.add('show');
+  confetti();
+  try {
+    const u = new SpeechSynthesisUtterance('Congratulations!');
+    u.rate = 0.95; u.pitch = 1.4;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch(e){}
+  const dismiss = () => {
+    fairyLayer.classList.remove('show');
+    fairyLayer.removeEventListener('click', dismiss);
+  };
+  fairyLayer.addEventListener('click', dismiss);
+}
+
+function confetti() {
+  const glyphs = ['🎉','✨','💎','🪙','⭐','💖','🌈','🧚'];
+  for (let i=0;i<80;i++){
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.textContent = glyphs[Math.floor(Math.random()*glyphs.length)];
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.top = '-30px';
+    p.style.animationDuration = (1.5 + Math.random()*2) + 's';
+    p.style.animationDelay = (Math.random()*0.6) + 's';
+    p.style.fontSize = (20 + Math.random()*26) + 'px';
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 4000);
+  }
+}
+
+/* ---- wire up ---- */
+startBtn.addEventListener('click', startGame);
+
+document.querySelectorAll('.lvl').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (busy) return;
+    level = btn.dataset.level;
+    document.querySelectorAll('.lvl').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+buildScene();
+placeCupsToSlots();
+</script>
+</body>
+</html>
