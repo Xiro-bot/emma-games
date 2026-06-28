@@ -2,6 +2,10 @@
 
 _Newest changes on top within each game. One game per section._
 
+> 🌐 **Live website (shareable):** https://xiro-bot.github.io/emma-games/
+> GitHub Pages from `Xiro-bot/emma-games` (public), served from `main` root.
+> Root `index.html` is the arcade landing page. `git push` → site rebuilds in ~1 min.
+
 ---
 
 ## 🏴‍☠️ Pirate Peekaboo
