@@ -2,6 +2,8 @@
 
 _Running list of lessons. Add a line whenever we learn something. Newest on top._
 
+- **Sandbox / no-lose modes work too.** Not every game needs a win/lose loop — a dress-up sandbox (drag clothes onto models) lets her create freely, with an on-demand "Start Show!" reward button. Give creative play a big optional celebration rather than a fail state.
+- **Draw clothes/props in CSS, not emoji.** Emoji read as "stickers" (her complaint on cups). Hand-draw with gradients + shapes.
 - **Default to the easiest setting.** Emma called the first build "too hard." Ship the gentlest version first; let difficulty scale up with optional buttons.
 - **Slow and steady beats fast.** On Easy, cups should move slowly and NOT speed up over time. Speeding-up is brutal for little kids.
 - **Give a long preview.** Show the treasure/goal for ~3 seconds before the challenge starts.

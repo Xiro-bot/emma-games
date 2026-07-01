@@ -8,6 +8,24 @@ _Newest changes on top within each game. One game per section._
 
 ---
 
+## 👗 Emma's Fashion Show
+- **Folder:** `~/code/emma-games/games/dressup-show/index.html` (single file — double-click to play)
+- **What it is:** A drag-and-drop dress-up game (Emma's idea). A dark stage with red velvet curtains + swag, a pink perspective runway, and **3 girls side by side under spotlight beams** (light cones + feet pools). Each girl starts in a **white sleeveless tee + white underwear**, with 3 different skin/hair combos. Cursor is a magic hand 🤚.
+- **Wardrobe rack** (bottom panel, grouped by category, all CSS-drawn — no emoji stickers): 👑 Crowns (gold jeweled crown, pink tiara) · 🌸 Flower headbands (rainbow flower crown, big-flower band) · 🎀 Skirts (rainbow tutu, polka skirt) · 👗 Princess dresses (purple/aqua/rose/sunny ballgowns) · 👠 Fancy shoes (glass slippers, ruby heels, gold flats).
+- **Mechanics:** pointer-drag a card up onto a girl → snaps into the right slot (head/body/feet). Slots are single-occupancy so a new dress/skirt swaps the old; new crown swaps old headband. **Tap a worn item to remove it.** `🔄 Undress` clears all. `🌟 Start Show!` (or Enter) = girls curtsy + flash + confetti (🌟💖👑🌈✨) + spoken "Wow! You look so beautiful!". Slot z-order: head 40 / feet 26 / body 20 over the base model.
+- **Status:** Built 2026-07-01, awaiting Emma's first playtest.
+
+### Open ideas / feedback to revisit
+- Could add hair styling (bows/ribbons), necklaces/wings, or a wand accessory.
+- Could add a "camera flash / photo" moment per girl, or let Emma pick backdrop colors.
+- Drag onto the closest girl works via elementFromPoint — watch that dropping precisely on a girl is easy enough for her; may need bigger hit targets.
+
+### History
+- **2026-07-01** — Emma's request: added two **cat-print dresses** (pink + blue) — a CSS-drawn white kitty face (pink ears, shiny eyes, nose, whiskers) on the skirt, via a new `deco` param on `dress()` + `catFace()` helper. Plain dresses still available. Open follow-ups Emma may want: cat on skirts, other cat colors, or more animal prints (bunny/unicorn/puppy).
+- **2026-07-01** — First build: spotlight fashion-show scene, 3 base models, 5 wardrobe categories, pointer drag-drop, tap-to-remove, curtsy+confetti+voice reward.
+
+---
+
 ## 🏴‍☠️ Pirate Peekaboo
 - **Folder:** `~/code/emma-games/games/pirate-barrels/index.html` (single file — double-click to play)
 - **What it is:** A pirate reskin of Treasure Cups (Emma's idea). The floor is a **pirate ship deck** (planks + railing + mast/sail with skull + waving 🏴‍☠️ flag, ocean & clouds behind). The cups are **wooden barrels** (staves, metal hoops, ⚓ stamp). Hiding under one barrel is a **glittering treasure pile** — 6 gold coins 🪙 + 9 hand-drawn CSS diamonds in many colors (ruby, orange, yellow, emerald, sky, sapphire, amethyst, pink, teal); coins bob and gems twinkle. Cursor is a **pirate hook 🪝**. Win → the pile pops up huge, confetti of 🏴‍☠️🦜💰⚓💀, and a deep piratey "Arrr! Ye found the treasure, matey!" voice.
