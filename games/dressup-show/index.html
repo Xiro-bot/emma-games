@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>✨ Emma's Fashion Show ✨</title>
+<style>
+  * { box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    font-family: "Comic Sans MS", "Chalkboard SE", "Baloo", system-ui, sans-serif;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewport='0 0 40 40'%3E%3Ctext y='32' font-size='30'%3E%F0%9F%A4%9A%3C/text%3E%3C/svg%3E") 8 8, auto;
+  }
+  body { display: flex; flex-direction: column; background: #1a0b2e; touch-action: none; }
+
+  /* ---------- STAGE ---------- */
+  #stage {
+    position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden;
+    background:
+      radial-gradient(120% 80% at 50% -10%, #4a2b6b 0%, #2a1449 45%, #150826 100%);
+  }
+  .curtain {
+    position: absolute; top: 0; bottom: 0; width: 9%; z-index: 6; pointer-events: none;
+    background:
+      repeating-linear-gradient(90deg,#7a0b1e 0 10px,#a3122b 10px 20px,#c21c3a 20px 26px,#a3122b 26px 34px);
+    box-shadow: inset -18px 0 30px rgba(0,0,0,.55);
+  }
+  .curtain.left { left: 0; border-radius: 0 0 40px 0; }
+  .curtain.right { right: 0; transform: scaleX(-1); border-radius: 0 0 40px 0; }
+  .swag {
+    position: absolute; top: -6px; left: 0; right: 0; height: 60px; z-index: 6; pointer-events: none;
+    background: repeating-linear-gradient(90deg,#7a0b1e 0 18px,#c21c3a 18px 36px);
+    border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    box-shadow: inset 0 -12px 24px rgba(0,0,0,.5);
+  }
+  #title {
+    position: absolute; top: 6px; left: 0; right: 0; z-index: 8; text-align: center;
+    color: #fff; font-size: clamp(20px, 4.4vw, 40px); font-weight: bold;
+    text-shadow: 0 0 12px #ff8ad4, 0 3px 0 #b3147a, 0 6px 10px rgba(0,0,0,.5);
+    pointer-events: none; letter-spacing: 1px;
+  }
+
+  #runway {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 26%; z-index: 1;
+    background: linear-gradient(#ff9ecb, #e85fa4);
+    clip-path: polygon(18% 0, 82% 0, 100% 100%, 0% 100%);
+    box-shadow: inset 0 6px 18px rgba(255,255,255,.4);
+  }
+  #runway::after {
+    content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 12%;
+    transform: translateX(-50%);
+    background: linear-gradient(rgba(255,255,255,.55), rgba(255,255,255,.15));
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0% 100%);
+  }
+
+  #models {
+    position: absolute; left: 0; right: 0; bottom: 8%; z-index: 3;
+    display: flex; justify-content: center; align-items: flex-end;
+    gap: clamp(6px, 3vw, 46px);
+    transform-origin: bottom center;
+  }
+
+  .stand { position: relative; }
+  .spotlight {
+    position: absolute; left: 50%; top: -300px; transform: translateX(-50%);
+    width: 260px; height: 340px; z-index: -1; pointer-events: none;
+    background: linear-gradient(rgba(255,255,240,.42), rgba(255,255,240,0) 78%);
+    clip-path: polygon(42% 0, 58% 0, 100% 100%, 0% 100%);
+    mix-blend-mode: screen; filter: blur(2px);
+  }
+  .pool {
+    position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
+    width: 190px; height: 42px; z-index: -1; pointer-events: none;
+    background: radial-gradient(ellipse at center, rgba(255,255,235,.55), rgba(255,255,235,0) 70%);
+    filter: blur(2px);
+  }
+
+  .model {
+    position: relative; width: 170px; height: 420px;
+    transition: transform .25s ease;
+  }
+  .model.hover { transform: translateY(-6px) scale(1.02); }
+  .model .worn { transition: transform .18s cubic-bezier(.2,1.6,.5,1); }
+  .model .worn:hover { filter: brightness(1.06); cursor: pointer; }
+  @keyframes pop { 0%{ transform: scale(.4); opacity:0 } 60%{ transform: scale(1.12) } 100%{ transform: scale(1); opacity:1 } }
+  .pop { animation: pop .32s ease; }
+
+  /* shared garment bits */
+  .garment { position: relative; }
+  .sparkle {
+    position: absolute; width: 9px; height: 9px; z-index: 5; pointer-events: none;
+    background: radial-gradient(circle, #fff 0%, rgba(255,255,255,.6) 35%, rgba(255,255,255,0) 70%);
+    animation: tw 1.7s ease-in-out infinite;
+  }
+  @keyframes tw { 0%,100%{ transform: scale(.5); opacity:.3 } 50%{ transform: scale(1.1); opacity:1 } }
+  .petal { position: absolute; border-radius: 60% 60% 55% 55%; }
+
+  /* ---------- WARDROBE ---------- */
+  #wardrobe {
+    flex: 0 0 auto; max-height: 36vh; overflow-y: auto; z-index: 10;
+    background: linear-gradient(#2c1550, #3a1c66);
+    border-top: 5px solid #ffd94a;
+    padding: 6px 10px 12px;
+    box-shadow: 0 -6px 20px rgba(0,0,0,.5);
+  }
+  .rackrow { margin: 4px 0 2px; }
+  .racklabel {
+    display: inline-block; color: #2a1449; background: #ffd94a; font-weight: bold;
+    font-size: 14px; padding: 2px 12px; border-radius: 20px; margin: 2px 0 4px 4px;
+    box-shadow: 0 2px 0 #d9a800;
+  }
+  .cards { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 2px 2px; }
+  .card {
+    width: 82px; height: 92px; border-radius: 16px;
+    background: linear-gradient(#fff, #ffe9f4);
+    box-shadow: 0 4px 0 #c98bbf, 0 6px 10px rgba(0,0,0,.35);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden; touch-action: none;
+    transition: transform .12s ease;
+  }
+  .card:active { transform: scale(.94); }
+  .card .thumb { position: relative; }
+
+  /* ---------- BUTTONS ---------- */
+  #controls {
+    position: absolute; top: 10px; right: 12px; z-index: 9; display: flex; gap: 8px;
+  }
+  .btn {
+    font-family: inherit; font-weight: bold; font-size: 15px; color: #2a1449;
+    border: none; border-radius: 22px; padding: 8px 14px; cursor: pointer;
+    box-shadow: 0 4px 0 rgba(0,0,0,.3); transition: transform .1s ease;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.3); }
+  #showBtn { background: linear-gradient(#ffe14d, #ffb01f); font-size: 17px; }
+  #resetBtn { background: linear-gradient(#c9f0ff, #8ad4ff); }
+
+  #hint {
+    position: absolute; bottom: 4px; left: 0; right: 0; z-index: 5; text-align: center;
+    color: #ffe9f4; font-size: 14px; opacity: .9; pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,.6);
+  }
+
+  /* dragging ghost */
+  #ghost { position: fixed; z-index: 999; pointer-events: none; transform: translate(-50%,-50%); filter: drop-shadow(0 8px 10px rgba(0,0,0,.5)); }
+
+  /* ---------- CELEBRATION ---------- */
+  #confetti { position: fixed; inset: 0; z-index: 900; pointer-events: none; overflow: hidden; display: none; }
+  .conf { position: absolute; top: -30px; font-size: 26px; will-change: transform; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+  #flash {
+    position: fixed; inset: 0; z-index: 850; pointer-events: none; display: none;
+    background: radial-gradient(circle at 50% 40%, rgba(255,255,255,.25), rgba(255,255,255,0) 60%);
+  }
+  #showText {
+    position: fixed; top: 30%; left: 0; right: 0; z-index: 901; text-align: center;
+    color: #fff; font-size: clamp(28px, 7vw, 64px); font-weight: bold; display: none;
+    text-shadow: 0 0 18px #ff5db1, 0 4px 0 #b3147a, 0 10px 16px rgba(0,0,0,.5);
+    animation: bounceIn .5s ease;
+  }
+  @keyframes bounceIn { 0%{ transform: scale(.3); opacity: 0 } 60%{ transform: scale(1.15) } 100%{ transform: scale(1); opacity: 1 } }
+  .curtsy { animation: curtsy 1.6s ease; }
+  @keyframes curtsy {
+    0%,100% { transform: none; }
+    25% { transform: translateY(10px) scale(.97); }
+    55% { transform: translateY(-8px) rotate(-3deg); }
+    80% { transform: translateY(-8px) rotate(3deg); }
+  }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div class="swag"></div>
+  <div class="curtain left"></div>
+  <div class="curtain right"></div>
+  <div id="title">✨ Emma's Fashion Show ✨</div>
+  <div id="controls">
+    <button id="resetBtn" class="btn">🔄 Undress</button>
+    <button id="showBtn" class="btn">🌟 Start Show!</button>
+  </div>
+  <div id="runway"></div>
+  <div id="models"></div>
+  <div id="hint">Drag the clothes up onto the girls! 👗  Tap something she's wearing to take it off.</div>
+</div>
+
+<div id="wardrobe"></div>
+
+<div id="ghost"></div>
+<div id="flash"></div>
+<div id="confetti"></div>
+<div id="showText"></div>
+
+<script>
+"use strict";
+const MW = 170; // model width
+
+/* ---------------- helpers ---------------- */
+function flower(size, pc, cc) {
+  const pw = Math.round(size*0.44), ph = Math.round(size*0.6);
+  let s = `<div style="position:relative;width:${size}px;height:${size}px;display:inline-block;">`;
+  for (let i=0;i<5;i++){
+    s += `<div class="petal" style="width:${pw}px;height:${ph}px;background:${pc};
+      left:${(size-pw)/2}px;top:${(size-ph)/2}px;position:absolute;
+      transform-origin:50% ${ph/2}px;transform:rotate(${i*72}deg) translateY(-${size*0.22}px);"></div>`;
+  }
+  s += `<div style="position:absolute;left:${size*0.3}px;top:${size*0.3}px;width:${size*0.4}px;height:${size*0.4}px;
+    background:radial-gradient(circle at 35% 30%, #fff6, ${cc});border-radius:50%;"></div>`;
+  s += `</div>`;
+  return s;
+}
+function sparkles(n, w, h) {
+  let s = "";
+  const spots = [[.2,.15],[.75,.25],[.5,.5],[.85,.65],[.15,.7],[.6,.85],[.35,.35]];
+  for (let i=0;i<n;i++){
+    const p = spots[i%spots.length];
+    s += `<div class="sparkle" style="left:${p[0]*w}px;top:${p[1]*h}px;animation-delay:${i*0.3}s"></div>`;
+  }
+  return s;
+}
+
+/* ---------------- garment art ---------------- */
+function goldCrown(w,h){
+  return `<div class="garment" style="width:${w}px;height:${h}px">
+    <div style="position:absolute;inset:0;
+      background:linear-gradient(#fff3b0,#ffd94a 40%,#e0a800 70%,#ffcf3d);
+      clip-path:polygon(0% 100%,0% 42%,20% 74%,35% 20%,50% 60%,65% 20%,80% 74%,100% 42%,100% 100%);
+      filter:drop-shadow(0 2px 2px rgba(0,0,0,.25))"></div>
+    <div style="position:absolute;left:8%;top:70%;width:12px;height:12px;background:radial-gradient(circle at 35% 30%,#fff,#e53935);border-radius:50%"></div>
+    <div style="position:absolute;left:44%;top:66%;width:13px;height:13px;background:radial-gradient(circle at 35% 30%,#fff,#2196f3);border-radius:50%"></div>
+    <div style="position:absolute;left:80%;top:70%;width:12px;height:12px;background:radial-gradient(circle at 35% 30%,#fff,#43a047);border-radius:50%"></div>
+    <div style="position:absolute;left:31%;top:12%;width:10px;height:10px;background:radial-gradient(circle at 35% 30%,#fff,#ff4081);border-radius:50%"></div>
+    <div style="position:absolute;left:61%;top:12%;width:10px;height:10px;background:radial-gradient(circle at 35% 30%,#fff,#ff4081);border-radius:50%"></div>
+    ${sparkles(3,w,h)}
+  </div>`;
+}
+function pinkTiara(w,h){
+  return `<div class="garment" style="width:${w}px;height:${h}px">
+    <div style="position:absolute;left:0;bottom:0;width:100%;height:46%;
+      background:linear-gradient(#ffe6f4,#ff8fc7 60%,#e05fa0);border-radius:0 0 40% 40%/0 0 100% 100%"></div>
+    <div style="position:absolute;left:0;bottom:24%;width:100%;height:64%;
+      background:linear-gradient(#fff,#ffbfe0 60%,#f27bbd);
+      clip-path:polygon(0% 100%,12% 70%,26% 92%,40% 44%,50% 8%,60% 44%,74% 92%,88% 70%,100% 100%)"></div>
+    <div style="position:absolute;left:44%;top:14%;width:15px;height:15px;
+      background:radial-gradient(circle at 35% 30%,#fff,#ff2d78);transform:rotate(45deg);border-radius:4px 40% 40% 40%"></div>
+    <div style="position:absolute;left:20%;bottom:34%;width:9px;height:9px;background:radial-gradient(circle at 35% 30%,#fff,#c0f);border-radius:50%"></div>
+    <div style="position:absolute;left:71%;bottom:34%;width:9px;height:9px;background:radial-gradient(circle at 35% 30%,#fff,#c0f);border-radius:50%"></div>
+    ${sparkles(3,w,h)}
+  </div>`;
+}
+function flowerCrown(w,h){
+  const cols = [["#ff5db1","#ffd0e8"],["#ffb01f","#fff0c9"],["#8a5cff","#e6dcff"],["#3ec1ff","#d3f2ff"],["#4cd964","#d6ffd9"],["#ff5db1","#ffd0e8"]];
+  let s = `<div class="garment" style="width:${w}px;height:${h}px">
+    <div style="position:absolute;left:2%;bottom:14%;width:96%;height:22%;
+      background:linear-gradient(#7ac74f,#4c9a2a);border-radius:40px"></div>`;
+  const n = 6, fs = Math.round(h*0.62);
+  for (let i=0;i<n;i++){
+    const x = 4 + i*(92/(n-1)) - (fs/2/w*100);
+    const lift = (i%2===0)? 0 : h*0.14;
+    s += `<div style="position:absolute;left:${x}%;top:${lift}px;">${flower(fs, cols[i][0], cols[i][1])}</div>`;
+  }
+  s += `</div>`;
+  return s;
+}
+function bigFlowerBand(w,h){
+  const fs = Math.round(h*0.95);
+  return `<div class="garment" style="width:${w}px;height:${h}px">
+    <div style="position:absolute;left:0;top:42%;width:100%;height:16%;
+      background:linear-gradient(#ffb6d5,#ff7ab3);border-radius:20px"></div>
+    <div style="position:absolute;left:6%;top:${(h-fs)/2}px;">${flower(fs,"#ff3f8e","#ffe14d")}</div>
+    <div style="position:absolute;left:64%;top:${h*0.18}px;">${flower(Math.round(fs*0.6),"#8a5cff","#fff")}</div>
+    ${sparkles(2,w,h)}
+  </div>`;
+}
+function catFace(s){
+  return `<div style="position:relative;width:${s}px;height:${s}px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))">
+    <div style="position:absolute;left:8%;top:0;width:30%;height:38%;background:#fff;clip-path:polygon(50% 0,0 100%,100% 100%)"></div>
+    <div style="position:absolute;right:8%;top:0;width:30%;height:38%;background:#fff;clip-path:polygon(50% 0,0 100%,100% 100%)"></div>
+    <div style="position:absolute;left:16%;top:9%;width:15%;height:22%;background:#ffb6d5;clip-path:polygon(50% 0,0 100%,100% 100%)"></div>
+    <div style="position:absolute;right:16%;top:9%;width:15%;height:22%;background:#ffb6d5;clip-path:polygon(50% 0,0 100%,100% 100%)"></div>
+    <div style="position:absolute;left:6%;top:20%;width:88%;height:78%;background:radial-gradient(circle at 40% 35%,#fff,#eee);border-radius:50%;box-shadow:inset 0 -4px 6px rgba(0,0,0,.08)"></div>
+    <div style="position:absolute;left:29%;top:46%;width:12%;height:17%;background:#3a2a1a;border-radius:50%"></div>
+    <div style="position:absolute;right:29%;top:46%;width:12%;height:17%;background:#3a2a1a;border-radius:50%"></div>
+    <div style="position:absolute;left:30%;top:47%;width:4%;height:5%;background:#fff;border-radius:50%"></div>
+    <div style="position:absolute;right:30%;top:47%;width:4%;height:5%;background:#fff;border-radius:50%"></div>
+    <div style="position:absolute;left:47%;top:60%;width:6%;height:6%;background:#ff7aa8;clip-path:polygon(50% 100%,0 0,100% 0)"></div>
+    <div style="position:absolute;left:0%;top:60%;width:28%;height:2px;background:#c9a;transform:rotate(6deg)"></div>
+    <div style="position:absolute;left:0%;top:68%;width:26%;height:2px;background:#c9a;transform:rotate(-4deg)"></div>
+    <div style="position:absolute;right:0%;top:60%;width:28%;height:2px;background:#c9a;transform:rotate(-6deg)"></div>
+    <div style="position:absolute;right:0%;top:68%;width:26%;height:2px;background:#c9a;transform:rotate(4deg)"></div>
+  </div>`;
+}
+function dress(w,h,c1,c2,c3,deco){
+  return `<div class="garment" style="width:${w}px;height:${h}px">
+    <!-- skirt -->
+    <div style="position:absolute;left:0;top:${h*0.26}px;width:${w}px;height:${h*0.74}px;
+      background:linear-gradient(${c1},${c2} 55%,${c3});
+      clip-path:polygon(36% 0,64% 0,100% 100%,0% 100%)"></div>
+    <div style="position:absolute;left:0;top:${h*0.26}px;width:${w}px;height:${h*0.74}px;
+      background:linear-gradient(115deg, rgba(255,255,255,.55), rgba(255,255,255,0) 42%);
+      clip-path:polygon(36% 0,64% 0,100% 100%,0% 100%)"></div>
+    <!-- ruffle hem -->
+    <div style="position:absolute;left:0;bottom:0;width:${w}px;height:${h*0.1}px;
+      background:radial-gradient(circle at 10% 0, ${c3} 40%, transparent 41%) 0 0/${w*0.14}px 100% repeat-x;"></div>
+    <!-- bodice -->
+    <div style="position:absolute;left:50%;top:0;transform:translateX(-50%);width:${w*0.42}px;height:${h*0.34}px;
+      background:linear-gradient(${c2},${c1});
+      clip-path:polygon(0 6%,50% 22%,100% 6%,100% 62%,50% 100%,0 62%)"></div>
+    <!-- straps -->
+    <div style="position:absolute;left:34%;top:0;width:5px;height:${h*0.16}px;background:${c1};transform:rotate(9deg);border-radius:3px"></div>
+    <div style="position:absolute;left:63%;top:0;width:5px;height:${h*0.16}px;background:${c1};transform:rotate(-9deg);border-radius:3px"></div>
+    <!-- waist gem -->
+    <div style="position:absolute;left:50%;top:${h*0.28}px;transform:translateX(-50%);width:14px;height:14px;
+      background:radial-gradient(circle at 35% 30%,#fff,#ffd94a);border-radius:50%"></div>
+    ${deco ? `<div style="position:absolute;left:50%;top:${h*0.48}px;transform:translateX(-50%);z-index:4">${deco}</div>` : ""}
+    ${sparkles(6,w,h)}
+  </div>`;
+}
+function tutu(w,h){
+  return `<div class="garment" style="width:${w}px;height:${h}px">
+    <div style="position:absolute;left:50%;top:0;transform:translateX(-50%);width:${w*0.5}px;height:${h*0.2}px;
+      background:linear-gradient(#ff8fc7,#e05fa0);border-radius:18px"></div>
+    <div style="position:absolute;left:0;top:${h*0.14}px;width:${w}px;height:${h*0.86}px;
+      background:linear-gradient(90deg,#ff5d5d,#ffb01f,#ffe14d,#5ad06a,#3ec1ff,#a06bff);
+      border-radius:46% 46% 50% 50% / 24% 24% 100% 100%;
+      box-shadow: inset 0 -10px 18px rgba(255,255,255,.4)"></div>
+    <div style="position:absolute;left:0;bottom:0;width:${w}px;height:${h*0.2}px;
+      background:radial-gradient(circle at 12% 0,rgba(255,255,255,.75) 42%,transparent 43%) 0 0/${w*0.16}px 100% repeat-x"></div>
+    ${sparkles(5,w,h)}
+  </div>`;
+}
+function polkaSkirt(w,h){
+  return `<div class="garment" style="width:${w}px;height:${h}px">
+    <div style="position:absolute;left:50%;top:0;transform:translateX(-50%);width:${w*0.52}px;height:${h*0.2}px;
+      background:linear-gradient(#ffd94a,#f0b400);border-radius:16px"></div>
+    <div style="position:absolute;left:0;top:${h*0.15}px;width:${w}px;height:${h*0.85}px;
+      background:
+        radial-gradient(circle, #fff 5px, transparent 6px) 6px 8px/26px 26px,
+        linear-gradient(#ff9ecb,#e85fa4);
+      clip-path:polygon(28% 0,72% 0,100% 100%,0% 100%)"></div>
+    ${sparkles(3,w,h)}
+  </div>`;
+}
+function shoePair(w,h,upper,heelc,bow){
+  function one(flip){
+    return `<div style="position:absolute;${flip?'right':'left'}:4px;bottom:0;width:${w*0.42}px;height:${h}px;
+        transform:scaleX(${flip?-1:1})">
+      <div style="position:absolute;left:0;bottom:2px;width:100%;height:44%;
+        background:${upper};border-radius:60% 70% 6px 40% / 90% 90% 6px 40%;
+        box-shadow: inset 0 -3px 4px rgba(0,0,0,.15)"></div>
+      <div style="position:absolute;right:2px;bottom:0;width:6px;height:60%;background:${heelc};border-radius:0 0 2px 3px;transform:skewX(-6deg)"></div>
+      <div style="position:absolute;left:0;bottom:0;width:78%;height:5px;background:${heelc};border-radius:6px"></div>
+      <div style="position:absolute;left:18%;bottom:34%;width:9px;height:9px;background:${bow};transform:rotate(45deg);border-radius:3px"></div>
+    </div>`;
+  }
+  return `<div class="garment" style="width:${w}px;height:${h}px">${one(false)}${one(true)}${sparkles(2,w,h)}</div>`;
+}
+function flats(w,h,c,bow){
+  function one(flip){
+    return `<div style="position:absolute;${flip?'right':'left'}:6px;bottom:0;width:${w*0.42}px;height:${h}px;transform:scaleX(${flip?-1:1})">
+      <div style="position:absolute;left:0;bottom:0;width:100%;height:70%;
+        background:${c};border-radius:60% 75% 8px 30% / 95% 95% 8px 40%;
+        box-shadow: inset 0 -3px 4px rgba(0,0,0,.18)"></div>
+      <div style="position:absolute;left:14%;bottom:30%;width:10px;height:10px;background:${bow};transform:rotate(45deg);border-radius:3px"></div>
+    </div>`;
+  }
+  return `<div class="garment" style="width:${w}px;height:${h}px">${one(false)}${one(true)}${sparkles(2,w,h)}</div>`;
+}
+
+/* ---------------- catalog ---------------- */
+const CAT = [
+  { label: "👑 Crowns", items: [
+    { id:"goldcrown",  cat:"head", w:100, h:64, top:-10, art:goldCrown },
+    { id:"tiara",      cat:"head", w:106, h:52, top:0,   art:pinkTiara },
+  ]},
+  { label: "🌸 Flower Headbands", items: [
+    { id:"flowercrown", cat:"head", w:120, h:48, top:14, art:flowerCrown },
+    { id:"bigflower",   cat:"head", w:112, h:46, top:16, art:bigFlowerBand },
+  ]},
+  { label: "🎀 Skirts", items: [
+    { id:"tutu",  cat:"body", w:138, h:98, top:178, art:tutu },
+    { id:"polka", cat:"body", w:130, h:94, top:182, art:polkaSkirt },
+  ]},
+  { label: "👗 Princess Dresses", items: [
+    { id:"purplegown", cat:"body", w:142, h:216, top:90, art:(w,h)=>dress(w,h,"#b06bff","#8a3cff","#5e1fb0") },
+    { id:"aquagown",   cat:"body", w:142, h:216, top:90, art:(w,h)=>dress(w,h,"#57e0e0","#22b8c9","#0f7f96") },
+    { id:"rosegown",   cat:"body", w:142, h:216, top:90, art:(w,h)=>dress(w,h,"#ff8fb4","#ff4d84","#c81e5a") },
+    { id:"sunnygown",  cat:"body", w:142, h:216, top:90, art:(w,h)=>dress(w,h,"#ffe36b","#ffbe2e","#e08a00") },
+    { id:"catpink",    cat:"body", w:142, h:216, top:90, art:(w,h)=>dress(w,h,"#ffbcdb","#ff6fb0","#e0348a", catFace(Math.round(w*0.36))) },
+    { id:"catblue",    cat:"body", w:142, h:216, top:90, art:(w,h)=>dress(w,h,"#a7dcff","#4fa8ff","#1b6fd6", catFace(Math.round(w*0.36))) },
+  ]},
+  { label: "👠 Fancy Shoes", items: [
+    { id:"glass", cat:"feet", w:122, h:48, top:342, art:(w,h)=>shoePair(w,h,"linear-gradient(#eaffff,#9fe3ff)","#7fc7e8","#bff0ff") },
+    { id:"ruby",  cat:"feet", w:122, h:48, top:342, art:(w,h)=>shoePair(w,h,"linear-gradient(#ff6a6a,#d40000)","#a00000","#ffd0d0") },
+    { id:"gold",  cat:"feet", w:120, h:44, top:348, art:(w,h)=>flats(w,h,"linear-gradient(#ffe98a,#e0a800)","#fff3b0") },
+  ]},
+];
+const ITEMS = {};
+CAT.forEach(c => c.items.forEach(it => { it.html = it.art(it.w, it.h); ITEMS[it.id] = it; }));
+
+/* ---------------- models ---------------- */
+const GIRLS = [
+  { skin:"#f6cba8", hair:"#5a3720" },
+  { skin:"#c98a5e", hair:"#241a15" },
+  { skin:"#f8d9c4", hair:"#c26a2e" },
+];
+function modelHTML(g){
+  const S=g.skin, H=g.hair;
+  return `
+  <div style="position:absolute;left:50%;top:6px;transform:translateX(-50%);width:98px;height:106px;background:${H};border-radius:50% 50% 44% 44%;z-index:1"></div>
+  <div style="position:absolute;left:18px;top:70px;width:20px;height:120px;background:${H};border-radius:14px;z-index:1"></div>
+  <div style="position:absolute;right:18px;top:70px;width:20px;height:120px;background:${H};border-radius:14px;z-index:1"></div>
+  <div style="position:absolute;left:50%;top:12px;transform:translateX(-50%);width:76px;height:82px;background:${S};border-radius:50% 50% 46% 46%;z-index:2"></div>
+  <div style="position:absolute;left:calc(50% - 17px);top:48px;width:9px;height:12px;background:#3a2a1a;border-radius:50%;z-index:3"></div>
+  <div style="position:absolute;left:calc(50% + 8px);top:48px;width:9px;height:12px;background:#3a2a1a;border-radius:50%;z-index:3"></div>
+  <div style="position:absolute;left:calc(50% - 26px);top:56px;width:12px;height:8px;background:#ff9db0;border-radius:50%;opacity:.6;z-index:3"></div>
+  <div style="position:absolute;left:calc(50% + 14px);top:56px;width:12px;height:8px;background:#ff9db0;border-radius:50%;opacity:.6;z-index:3"></div>
+  <div style="position:absolute;left:50%;top:62px;transform:translateX(-50%);width:22px;height:11px;border-bottom:3px solid #c0506a;border-radius:0 0 40px 40px;z-index:3"></div>
+  <div style="position:absolute;left:50%;top:8px;transform:translateX(-50%);width:82px;height:34px;background:${H};border-radius:44% 44% 60% 60% / 60% 60% 100% 100%;z-index:3"></div>
+  <div style="position:absolute;left:50%;top:88px;transform:translateX(-50%);width:22px;height:16px;background:${S};z-index:1"></div>
+  <div style="position:absolute;left:26px;top:116px;width:18px;height:92px;background:${S};border-radius:12px;z-index:3"></div>
+  <div style="position:absolute;right:26px;top:116px;width:18px;height:92px;background:${S};border-radius:12px;z-index:3"></div>
+  <!-- white sleeveless tee -->
+  <div style="position:absolute;left:calc(50% - 32px);top:96px;width:14px;height:26px;background:#fff;transform:rotate(6deg);border-radius:8px;z-index:4"></div>
+  <div style="position:absolute;left:calc(50% + 18px);top:96px;width:14px;height:26px;background:#fff;transform:rotate(-6deg);border-radius:8px;z-index:4"></div>
+  <div style="position:absolute;left:50%;top:104px;transform:translateX(-50%);width:96px;height:84px;background:linear-gradient(#fff,#f0f0f5);border-radius:26px 26px 16px 16px;z-index:4;box-shadow:inset 0 -6px 10px rgba(0,0,0,.06)"></div>
+  <!-- white underwear -->
+  <div style="position:absolute;left:50%;top:184px;transform:translateX(-50%);width:60px;height:38px;background:linear-gradient(#fff,#eee);border-radius:6px 6px 46% 46% / 6px 6px 90% 90%;z-index:4"></div>
+  <!-- legs -->
+  <div style="position:absolute;left:calc(50% - 26px);top:206px;width:24px;height:150px;background:${S};border-radius:12px 12px 10px 10px;z-index:3"></div>
+  <div style="position:absolute;left:calc(50% + 2px);top:206px;width:24px;height:150px;background:${S};border-radius:12px 12px 10px 10px;z-index:3"></div>
+  <!-- feet -->
+  <div style="position:absolute;left:calc(50% - 28px);top:352px;width:28px;height:18px;background:${S};border-radius:8px 12px 10px 8px;z-index:3"></div>
+  <div style="position:absolute;left:calc(50% + 2px);top:352px;width:28px;height:18px;background:${S};border-radius:12px 8px 8px 10px;z-index:3"></div>
+  `;
+}
+
+const modelsWrap = document.getElementById("models");
+GIRLS.forEach((g,i) => {
+  const stand = document.createElement("div");
+  stand.className = "stand";
+  stand.innerHTML = `<div class="spotlight"></div><div class="pool"></div>`;
+  const m = document.createElement("div");
+  m.className = "model";
+  m.dataset.i = i;
+  m.innerHTML = modelHTML(g);
+  stand.appendChild(m);
+  modelsWrap.appendChild(stand);
+});
+const MODELS = [...document.querySelectorAll(".model")];
+
+function zFor(cat){ return cat==="head"?40 : cat==="feet"?26 : 20; }
+
+function wear(model, item){
+  // remove same-slot garment
+  model.querySelectorAll(`.worn[data-cat="${item.cat}"]`).forEach(e=>e.remove());
+  const el = document.createElement("div");
+  el.className = "worn pop";
+  el.dataset.cat = item.cat;
+  el.innerHTML = item.html;
+  const left = (MW - item.w)/2;
+  Object.assign(el.style, {
+    position:"absolute", left:left+"px", top:item.top+"px",
+    width:item.w+"px", height:item.h+"px", zIndex:zFor(item.cat)
+  });
+  el.addEventListener("pointerdown", (ev)=>{ ev.stopPropagation(); }); // don't start a drag from body
+  el.addEventListener("click", ()=>{ el.style.animation="pop .25s reverse"; setTimeout(()=>el.remove(),180); });
+  model.appendChild(el);
+}
+
+/* ---------------- wardrobe UI ---------------- */
+const wardrobe = document.getElementById("wardrobe");
+CAT.forEach(c => {
+  const row = document.createElement("div"); row.className = "rackrow";
+  row.innerHTML = `<div class="racklabel">${c.label}</div>`;
+  const cards = document.createElement("div"); cards.className = "cards";
+  c.items.forEach(it => {
+    const card = document.createElement("div"); card.className = "card";
+    const scale = Math.min(70/it.w, 78/it.h, 1);
+    card.innerHTML = `<div class="thumb" style="width:${it.w}px;height:${it.h}px;transform:scale(${scale});transform-origin:center">${it.html}</div>`;
+    card.dataset.id = it.id;
+    cards.appendChild(card);
+  });
+  row.appendChild(cards);
+  wardrobe.appendChild(row);
+});
+
+/* ---------------- drag & drop ---------------- */
+const ghost = document.getElementById("ghost");
+let drag = null;
+
+function startDrag(id, x, y){
+  const it = ITEMS[id];
+  drag = it;
+  ghost.innerHTML = `<div style="width:${it.w}px;height:${it.h}px">${it.html}</div>`;
+  ghost.style.left = x+"px"; ghost.style.top = y+"px"; ghost.style.display = "block";
+}
+function moveDrag(x,y){
+  if(!drag) return;
+  ghost.style.left = x+"px"; ghost.style.top = y+"px";
+  ghost.style.display = "none";
+  const under = document.elementFromPoint(x,y);
+  ghost.style.display = "block";
+  MODELS.forEach(m=>m.classList.remove("hover"));
+  const m = under && under.closest(".model");
+  if(m) m.classList.add("hover");
+}
+function endDrag(x,y){
+  if(!drag) return;
+  ghost.style.display = "none";
+  const under = document.elementFromPoint(x,y);
+  const m = under && under.closest(".model");
+  if(m) wear(m, drag);
+  MODELS.forEach(mm=>mm.classList.remove("hover"));
+  ghost.innerHTML = "";
+  drag = null;
+}
+
+wardrobe.addEventListener("pointerdown", (e)=>{
+  const card = e.target.closest(".card");
+  if(!card) return;
+  e.preventDefault();
+  startDrag(card.dataset.id, e.clientX, e.clientY);
+});
+window.addEventListener("pointermove", (e)=>{ if(drag){ e.preventDefault(); moveDrag(e.clientX,e.clientY);} }, {passive:false});
+window.addEventListener("pointerup", (e)=>{ if(drag) endDrag(e.clientX,e.clientY); });
+window.addEventListener("pointercancel", ()=>{ if(drag){ ghost.style.display="none"; ghost.innerHTML=""; drag=null; MODELS.forEach(m=>m.classList.remove("hover")); } });
+
+/* ---------------- buttons & celebration ---------------- */
+document.getElementById("resetBtn").addEventListener("click", ()=>{
+  document.querySelectorAll(".worn").forEach(e=>e.remove());
+});
+
+const confetti = document.getElementById("confetti");
+const flash = document.getElementById("flash");
+const showText = document.getElementById("showText");
+const EMO = ["🌟","💖","👑","🌈","✨","👗","🎀","💎","🦋","🌸"];
+
+function say(t){
+  try { const u = new SpeechSynthesisUtterance(t); u.rate=.95; u.pitch=1.35; speechSynthesis.cancel(); speechSynthesis.speak(u);} catch(e){}
+}
+function celebrate(){
+  MODELS.forEach((m,i)=>{ m.classList.remove("curtsy"); void m.offsetWidth; m.style.animationDelay=(i*0.18)+"s"; m.classList.add("curtsy"); });
+  flash.style.display="block"; flash.animate([{opacity:1},{opacity:0}],{duration:900});
+  confetti.style.display="block"; confetti.innerHTML="";
+  for(let i=0;i<70;i++){
+    const c=document.createElement("div"); c.className="conf";
+    c.textContent=EMO[i%EMO.length];
+    c.style.left=(Math.round((i*137)%100))+"%";
+    const dur=2.6+((i*53)%16)/10, delay=((i*29)%20)/10;
+    c.style.animation=`fall ${dur}s linear ${delay}s forwards`;
+    c.style.fontSize=(18+((i*17)%20))+"px";
+    confetti.appendChild(c);
+  }
+  showText.textContent="💖 So Beautiful! 💖";
+  showText.style.display="block";
+  say("Wow! You look so beautiful! What a fabulous fashion show!");
+  setTimeout(()=>{ confetti.style.display="none"; showText.style.display="none"; flash.style.display="none"; }, 3600);
+}
+document.getElementById("showBtn").addEventListener("click", celebrate);
+window.addEventListener("keydown",e=>{ if(e.key==="Enter") celebrate(); });
+</script>
+</body>
+</html>
