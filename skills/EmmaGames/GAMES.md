@@ -8,6 +8,24 @@ _Newest changes on top within each game. One game per section._
 
 ---
 
+## 🍕 Emma's Pizza Kitchen
+- **Folder:** `~/code/emma-games/games/pizza-kitchen/index.html` (single file — double-click to play)
+- **What it is:** A pizza-maker game (Chiro's spec). Left: wooden counter with a dough on a board. Right: **wood-fire brick oven** (animated CSS flames + logs, glowing mouth). Bottom: ingredient rack of 8 CSS-drawn cards — Tomato Sauce, Cheese (layers), Basil, Pepperoni, Mushrooms, Olives, Corn, **Heart Ham** (pink hearts, for Emma). Cursor is an oven mitt 🧤.
+- **Mechanics:** drag a card onto the dough → sauce/cheese spread as layers, toppings scatter 5–7 pieces (tap a piece to remove; 🗑️ Start over clears). Drag the whole pizza into the oven → cooking starts. Pizza **browns gradually** (golden overlay → charred overlay). A **cook bar** below the oven shows zones (pale → green ⭐ perfect → burnt) with a moving needle; entering the perfect zone triggers a **WebAudio ding + flashing "⭐ DING! TAKE IT OUT! ⭐" sign + voice**. Click the oven to take it out.
+- **Verdicts:** too early → "Still a bit pale!" + **Put it back in!** button (resumes cooking from where it was); perfect → PERFETTO! ⭐⭐⭐ confetti + "Mamma mia!" voice; too late → smoke 💨 + encouraging retry. If never taken out, auto-pulls 4s after fully burnt.
+- **Difficulty:** 🐢 Easy (default, 7s perfect window, 26s to burnt) / 🧑‍🍳 Chef / 🔥 Super Chef.
+- **Status:** Built 2026-08-08, awaiting Emma's first playtest.
+
+### Open ideas / feedback to revisit
+- Could add an "eat it" moment after a perfect pizza (bites disappearing).
+- Could let Emma choose pizza size or make pizzas for customers (orders to match).
+- Oven-drop hit target: whole oven counts — watch if dragging the pizza there is easy enough for her.
+
+### History
+- **2026-08-08** — First build: 8 ingredients, drag-assemble, drag-to-oven, browning + zoned cook bar + ding, three verdicts with put-back-in for undercooked. Also added Fashion Show + Pizza Kitchen cards to the arcade landing page (both were missing).
+
+---
+
 ## 👗 Emma's Fashion Show
 - **Folder:** `~/code/emma-games/games/dressup-show/index.html` (single file — double-click to play)
 - **What it is:** A drag-and-drop dress-up game (Emma's idea). A dark stage with red velvet curtains + swag, a pink perspective runway, and **3 girls side by side under spotlight beams** (light cones + feet pools). Each girl starts in a **white sleeveless tee + white underwear**, with 3 different skin/hair combos. Cursor is a magic hand 🤚.
