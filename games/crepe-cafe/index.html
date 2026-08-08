@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🥞 Emma's Crêpe Café</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-user-select:none; }
+  html,body { height:100%; }
+  body {
+    font-family: "Comic Sans MS", "Chalkboard SE", "Marker Felt", cursive;
+    background: linear-gradient(#fdeeda, #f9dcb2 55%, #eec288);
+    overflow:hidden;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><text y="32" font-size="32">🧤</text></svg>') 8 8, auto;
+    display:flex; flex-direction:column;
+  }
+  h1 { text-align:center; padding:6px 0 2px; font-size:28px; color:#8a4a12;
+       text-shadow:2px 2px 0 #fdeeda, 3px 3px 0 #d9a05e; }
+  #chips { display:flex; justify-content:center; gap:6px; padding:2px 0 6px; flex-wrap:wrap; }
+  .chip { font-size:13px; color:#8a6a45; background:#fdf3e3; border:2px solid #e0b87e; border-radius:12px; padding:3px 9px; opacity:.55; }
+  .chip.on { opacity:1; background:#ffd166; border-color:#c8862e; color:#6b3d0e; transform:scale(1.12); font-weight:bold; }
+  .chip.done { opacity:.85; background:#c9ecc4; border-color:#7db873; color:#2f6b28; }
+  #diffbar { position:fixed; top:10px; right:12px; z-index:50; display:flex; gap:6px; }
+  .diff { font-family:inherit; font-size:14px; padding:5px 9px; border-radius:12px; border:3px solid #8a4a12;
+          background:#fdf3e3; color:#8a4a12; cursor:pointer; }
+  .diff.on { background:#ffb648; transform:scale(1.08); }
+
+  /* ---------------- scene ---------------- */
+  #scene { flex:1; display:flex; align-items:flex-end; justify-content:center; gap:26px; padding:0 16px; min-height:0; }
+  .station { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; position:relative; }
+  .bench { width:100%; height:26px; border-radius:10px 10px 0 0; background:linear-gradient(#c98a4b,#a96a33);
+           box-shadow:0 -3px 0 #e0aa6c inset; }
+
+  /* ----- mixing station ----- */
+  #mixSt { width:330px; }
+  #shelf { display:flex; gap:10px; margin-bottom:10px; }
+  .card { width:84px; height:98px; background:#fff; border:4px solid #ffb648; border-radius:16px;
+          display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+          box-shadow:0 4px 8px rgba(160,80,0,.2); touch-action:none; }
+  .card:hover { transform:translateY(-4px) scale(1.05); border-color:#ff8b2e; }
+  .card.used { opacity:.28; pointer-events:none; }
+  .card .thumb { width:56px; height:56px; display:flex; align-items:center; justify-content:center; }
+  .card .lbl { font-size:12px; color:#7c4a1d; }
+  .card * { pointer-events:none; }
+  #bowlSpot { width:240px; height:190px; position:relative; }
+  #bowl { position:absolute; left:15px; bottom:2px; width:210px; height:158px; touch-action:none; }
+  #bowlBody { position:absolute; left:0; right:0; top:34px; bottom:0;
+              border-radius: 18px 18px 105px 105px / 14px 14px 118px 118px;
+              background:linear-gradient(150deg, #6db3e8, #3f7fc0 60%, #2f639c);
+              box-shadow:0 8px 14px rgba(90,40,0,.3), 0 -3px 0 rgba(255,255,255,.35) inset; }
+  #bowlMouth { position:absolute; left:4px; right:4px; top:12px; height:56px; border-radius:50%;
+               background:#2a4a72; box-shadow:0 0 0 6px #5a9ad4, 0 4px 8px rgba(0,0,0,.35) inset; overflow:hidden; }
+  #batterFill { position:absolute; left:8%; right:8%; top:26%; bottom:10%; border-radius:50%;
+                background:radial-gradient(circle at 45% 40%, #fdf3dd, #f2dfb4); display:none; }
+  #swirl { position:absolute; inset:0; display:none; }
+  .streak { position:absolute; left:50%; top:50%; width:38%; height:5px; border-radius:4px;
+            background:rgba(255,255,255,.55); transform-origin:0 50%; }
+  #flourPile { position:absolute; left:26%; top:34%; width:40%; height:42%; border-radius:50%;
+               background:radial-gradient(#ffffff, #efe6d2); display:none; }
+  #milkPool { position:absolute; left:12%; right:12%; top:30%; bottom:14%; border-radius:50%;
+              background:rgba(250,248,240,.75); display:none; }
+  #yolk { position:absolute; left:52%; top:38%; width:26%; height:32%; border-radius:50%;
+          background:radial-gradient(circle at 40% 35%, #ffd23e, #f5a623); box-shadow:0 0 0 7px rgba(255,252,240,.8); display:none; }
+  #stirbar { position:absolute; left:10px; right:10px; top:-16px; height:14px; border-radius:8px; border:3px solid #8a4a12;
+             background:#fdf3e3; overflow:hidden; display:none; }
+  #stirfill { height:100%; width:0; background:linear-gradient(90deg,#ffd166,#ff9a3d); }
+  #whisk { position:fixed; z-index:700; display:none; pointer-events:none; transform:translate(-50%,-85%) rotate(20deg); }
+
+  /* ----- stove station ----- */
+  #stoveSt { width:340px; }
+  #stove { width:320px; height:210px; position:relative; border-radius:18px 18px 0 0;
+           background:linear-gradient(#8e8e96,#5c5c64); box-shadow:0 8px 16px rgba(60,30,0,.3), 0 -3px 0 rgba(255,255,255,.25) inset; }
+  #burner { position:absolute; left:50%; top:88px; transform:translate(-50%,-50%); width:160px; height:120px; border-radius:50%;
+            background:radial-gradient(#2c2c31 55%, #4a4a52 56% 70%, #2c2c31 71%); box-shadow:0 2px 6px rgba(0,0,0,.5) inset; }
+  .sflame { position:absolute; width:16px; height:26px; border-radius:50% 50% 42% 42%/ 68% 68% 32% 32%;
+            background:radial-gradient(closest-side at 50% 88%, #fff3a0, #ffce4d 40%, #ff9a2e 70%, transparent);
+            transform-origin:50% 100%; animation:flick .4s ease-in-out infinite alternate; display:none; }
+  @keyframes flick { from { transform:scaleY(.8) } to { transform:scaleY(1.2) } }
+  #stove.on .sflame { display:block; }
+  #knob { position:absolute; right:22px; bottom:16px; width:52px; height:52px; border-radius:50%;
+          background:radial-gradient(circle at 35% 30%, #ddd, #8a8a92 70%); box-shadow:0 3px 6px rgba(0,0,0,.4);
+          cursor:pointer; transition:transform .3s; }
+  #knob::after { content:""; position:absolute; left:50%; top:5px; width:7px; height:20px; border-radius:4px;
+                 background:#3a3a40; transform:translateX(-50%); }
+  #stove.on #knob { transform:rotate(120deg); }
+  #knobLight { position:absolute; right:44px; bottom:74px; width:12px; height:12px; border-radius:50%; background:#4a2020; }
+  #stove.on #knobLight { background:#ff4d3a; box-shadow:0 0 10px #ff4d3a; }
+  #burnerSlot { position:absolute; left:50%; top:88px; transform:translate(-50%,-50%); width:190px; height:190px; pointer-events:none; }
+
+  /* pan */
+  #pan { position:absolute; width:190px; height:150px; touch-action:none; }
+  #pan.hanging { right:-40px; top:-64px; transform:rotate(12deg); }
+  #panDisc { position:absolute; left:10px; top:16px; width:150px; height:116px; border-radius:50%;
+             background:radial-gradient(circle at 45% 38%, #4a4a52, #26262c 70%);
+             box-shadow:0 0 0 7px #3a3a42, 0 6px 12px rgba(0,0,0,.45); }
+  #panHandle { position:absolute; right:-28px; top:56px; width:74px; height:20px; border-radius:10px;
+               background:linear-gradient(#3a3a42,#1e1e24); transform:rotate(-8deg); }
+  #crepe { position:absolute; left:24px; top:28px; width:122px; height:92px;
+           border-radius:52% 48% 50% 50% / 51% 49% 52% 48%;
+           background:radial-gradient(circle at 45% 40%, #fbeccb, #f5ddA8 70%, #eccf92);
+           display:none; }
+  .cbrown { position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0; }
+  .cgold { background:radial-gradient(circle, rgba(205,140,50,.15) 30%, rgba(190,115,35,.8) 85%),
+                      radial-gradient(circle at 30% 60%, rgba(190,120,40,.5) 8%, transparent 22%),
+                      radial-gradient(circle at 65% 30%, rgba(190,120,40,.5) 8%, transparent 22%),
+                      radial-gradient(circle at 60% 70%, rgba(190,120,40,.45) 10%, transparent 24%); }
+  .cchar { background:radial-gradient(circle, rgba(50,28,12,.5) 30%, rgba(28,15,6,.92) 85%); }
+  @keyframes spreadin { from { transform:scale(.15); opacity:0; } to { transform:scale(1); opacity:1; } }
+
+  #sign { position:absolute; left:50%; top:-34px; transform:translateX(-50%); white-space:nowrap; z-index:5;
+          font-size:19px; color:#fff; background:#a33b12; border-radius:14px; padding:5px 15px;
+          border:3px solid #fdeeda; display:none; }
+  #sign.alarm { background:#1f9d3c; font-size:22px; animation:alarmpulse .45s ease-in-out infinite alternate; }
+  @keyframes alarmpulse { from { transform:translateX(-50%) scale(1);} to { transform:translateX(-50%) scale(1.15);} }
+  #barwrap { margin-top:12px; width:300px; position:relative; }
+  #cookbar { width:100%; height:28px; border-radius:14px; border:4px solid #7c4a1d; overflow:hidden; position:relative; background:#f7e1b5; }
+  #needle { position:absolute; top:-6px; bottom:-6px; width:6px; background:#fff; border:2px solid #a33b12; border-radius:4px; left:0; }
+  #barstar { position:absolute; top:50%; transform:translate(-50%,-54%); font-size:20px; text-shadow:0 0 6px #fff; pointer-events:none; }
+
+  /* ----- plate station ----- */
+  #plateSt { width:300px; }
+  #verdictRow { min-height:40px; font-size:26px; color:#8a4a12; text-align:center; margin-bottom:4px; }
+  #plateSpot { width:270px; height:190px; position:relative; }
+  #plate { position:absolute; left:15px; bottom:6px; width:240px; height:150px; border-radius:50%;
+           background:radial-gradient(circle at 50% 42%, #ffffff 52%, #e8e8ee 53% 72%, #ffffff 73%);
+           box-shadow:0 8px 16px rgba(90,40,0,.28), 0 2px 4px rgba(0,0,0,.15) inset; }
+  #plateCrepe { position:absolute; left:35px; bottom:26px; width:200px; height:126px;
+                border-radius:52% 48% 50% 50% / 51% 49% 52% 48%;
+                background:radial-gradient(circle at 45% 40%, #fbeccb, #f5ddA8 70%, #eccf92);
+                display:none; }
+  #ptops { position:absolute; inset:0; }
+  .piece { position:absolute; animation:plop .3s ease-out; cursor:pointer; }
+  @keyframes plop { from { transform:scale(2.2); opacity:0; } to { transform:scale(1); opacity:1; } }
+
+  /* ---------------- toppings rack ---------------- */
+  #rack { background:linear-gradient(#fdf3e3,#f6ddb0); border-top:5px solid #d9a05e; padding:8px 14px 12px;
+          display:none; justify-content:center; align-items:center; gap:10px; flex-wrap:wrap; }
+  #bonBtn { font-family:inherit; font-size:20px; padding:12px 22px; border-radius:18px; border:4px solid #fff;
+            background:#1f9d3c; color:#fff; cursor:pointer; margin-left:14px; display:none; }
+  #bonBtn:hover { transform:scale(1.07); }
+
+  #hintBubble { position:fixed; z-index:500; font-size:16px; color:#8a4a12; background:#fff7e8;
+                border:3px dashed #e0894a; border-radius:14px; padding:5px 12px; white-space:nowrap;
+                animation:bob 1.6s ease-in-out infinite; display:none; pointer-events:none; }
+  @keyframes bob { 0%,100% { transform:translate(-50%,0);} 50% { transform:translate(-50%,-8px);} }
+
+  #ghost { position:fixed; z-index:800; pointer-events:none; display:none; transform:translate(-50%,-60%) scale(1.3); }
+  #stream { position:fixed; z-index:650; width:16px; border-radius:8px; display:none;
+            background:linear-gradient(#fdf3dd,#f2dfb4); box-shadow:0 0 6px rgba(240,220,170,.8); }
+
+  #finale { position:fixed; inset:0; z-index:600; background:rgba(70,35,5,.6); display:none;
+            align-items:center; justify-content:center; flex-direction:column; gap:16px; }
+  #finTitle { font-size:52px; color:#fff; text-shadow:3px 3px 0 #a33b12; }
+  #finStars { font-size:42px; }
+  .obtn { font-family:inherit; font-size:22px; padding:12px 24px; border-radius:20px; border:5px solid #fff;
+          background:#e07615; color:#fff; cursor:pointer; }
+  .obtn:hover { transform:scale(1.07); }
+
+  #confetti { position:fixed; inset:0; z-index:900; pointer-events:none; overflow:hidden; display:none; }
+  .conf { position:absolute; top:-40px; }
+  @keyframes fall { to { transform:translateY(110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<h1>🥞 Emma's Crêpe Café 🥞</h1>
+<div id="chips">
+  <span class="chip" data-p="mix">🥣 Mix</span><span class="chip" data-p="stir">🌀 Stir</span>
+  <span class="chip" data-p="stove">🔥 Stove</span><span class="chip" data-p="pan">🍳 Pan</span>
+  <span class="chip" data-p="pour">🫗 Pour</span><span class="chip" data-p="cook">⏰ Cook &amp; Flip</span>
+  <span class="chip" data-p="top">🍓 Toppings</span>
+</div>
+
+<div id="diffbar">
+  <button class="diff on" data-d="easy">🐢 Easy</button>
+  <button class="diff" data-d="med">🧑‍🍳 Chef</button>
+  <button class="diff" data-d="hard">🔥 Super Chef</button>
+</div>
+
+<div id="scene">
+  <div class="station" id="mixSt">
+    <div id="shelf"></div>
+    <div id="bowlSpot">
+      <div id="bowl">
+        <div id="stirbar"><div id="stirfill"></div></div>
+        <div id="bowlMouth">
+          <div id="milkPool"></div>
+          <div id="flourPile"></div>
+          <div id="yolk"></div>
+          <div id="batterFill"></div>
+          <div id="swirl"></div>
+        </div>
+        <div id="bowlBody"></div>
+      </div>
+    </div>
+    <div class="bench"></div>
+  </div>
+
+  <div class="station" id="stoveSt">
+    <div id="stove">
+      <div id="sign">🔥 Cooking… 🔥</div>
+      <div id="burner"></div>
+      <div id="knobLight"></div>
+      <div id="knob"></div>
+      <div id="burnerSlot"></div>
+      <div id="pan" class="hanging">
+        <div id="panDisc"></div>
+        <div id="panHandle"></div>
+        <div id="crepe">
+          <div class="cbrown cgold" id="cg"></div>
+          <div class="cbrown cchar" id="cc"></div>
+        </div>
+      </div>
+    </div>
+    <div id="barwrap">
+      <div id="cookbar"><div id="needle"></div></div>
+      <div id="barstar">⭐</div>
+    </div>
+    <div class="bench" style="margin-top:10px;"></div>
+  </div>
+
+  <div class="station" id="plateSt">
+    <div id="verdictRow"></div>
+    <div id="plateSpot">
+      <div id="plate"></div>
+      <div id="plateCrepe"><div id="ptops"></div></div>
+    </div>
+    <div class="bench"></div>
+  </div>
+</div>
+
+<div id="rack"></div>
+
+<div id="hintBubble"></div>
+<div id="ghost"></div>
+<div id="stream"></div>
+<div id="whisk">
+  <div style="width:10px;height:52px;border-radius:5px;background:linear-gradient(#c9c9d2,#8a8a94);margin:0 auto;"></div>
+  <div style="position:relative;width:44px;height:58px;margin-top:-4px;">
+    <div style="position:absolute;left:4px;top:0;width:36px;height:58px;border:4px solid #b8b8c2;border-radius:50%;"></div>
+    <div style="position:absolute;left:12px;top:0;width:20px;height:58px;border:4px solid #d2d2da;border-radius:50%;"></div>
+  </div>
+</div>
+
+<div id="finale">
+  <div id="finTitle">🇫🇷 Bon appétit! 🇫🇷</div>
+  <div id="finStars"></div>
+  <button class="obtn" id="againBtn">🥞 Make another crêpe!</button>
+</div>
+
+<div id="confetti"></div>
+
+<script>
+function ir(n){ return Math.floor(Math.random()*n); }
+
+/* =============== CSS art =============== */
+function flourBag(){ return `<div style="position:relative;width:44px;height:54px;">
+  <div style="position:absolute;inset:0;top:8px;background:linear-gradient(#f5e9d2,#e2cda6);border:2px solid #c9a976;border-radius:6px;"></div>
+  <div style="position:absolute;left:4px;top:0;right:4px;height:12px;background:#d9bf92;border:2px solid #c9a976;border-radius:4px 4px 0 0;"></div>
+  <div style="position:absolute;left:6px;top:22px;right:6px;height:16px;background:#fff;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#8a6a45;font-family:inherit;">FLOUR</div></div>`; }
+function milkCarton(){ return `<div style="position:relative;width:38px;height:56px;">
+  <div style="position:absolute;inset:0;top:10px;background:linear-gradient(#fff,#e8f0fa);border:2px solid #7aa8d8;border-radius:4px;"></div>
+  <div style="position:absolute;left:0;right:0;top:0;height:16px;background:#7aa8d8;clip-path:polygon(0 100%, 15% 0, 85% 0, 100% 100%);"></div>
+  <div style="position:absolute;left:5px;top:28px;right:5px;height:14px;background:#dce9f8;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#3a6aa8;font-family:inherit;">MILK</div></div>`; }
+function eggArt(){ return `<div style="width:36px;height:46px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 38% 30%, #fffdf5, #f0e6d2 75%);border:2px solid #dcd0b8;box-shadow:0 2px 4px rgba(120,90,40,.3);"></div>`; }
+function strawberryPiece(w){ const h=Math.round(w*1.1);
+  return `<div style="position:relative;width:${w}px;height:${h}px;">
+    <div style="position:absolute;inset:0;top:${Math.round(h*.14)}px;border-radius:50% 50% 50% 50%/40% 40% 62% 62%;background:radial-gradient(circle at 40% 30%, #ff6b5e, #e0231f 75%);box-shadow:0 1px 3px rgba(150,20,10,.4);"></div>
+    <div style="position:absolute;left:20%;top:38%;width:3px;height:3px;border-radius:50%;background:#ffe9a0;"></div>
+    <div style="position:absolute;left:55%;top:50%;width:3px;height:3px;border-radius:50%;background:#ffe9a0;"></div>
+    <div style="position:absolute;left:38%;top:66%;width:3px;height:3px;border-radius:50%;background:#ffe9a0;"></div>
+    <div style="position:absolute;left:62%;top:30%;width:3px;height:3px;border-radius:50%;background:#ffe9a0;"></div>
+    <div style="position:absolute;left:25%;top:0;width:50%;height:${Math.round(h*.24)}px;border-radius:40% 40% 60% 60%;background:linear-gradient(#5fb865,#3c8a42);"></div></div>`; }
+function bananaSlice(s){ return `<div style="position:relative;width:${s}px;height:${s}px;border-radius:50%;background:radial-gradient(#fdf6d8, #f5e6a8 70%);border:3px solid #e8d488;">
+  <div style="position:absolute;inset:22%;border-radius:50%;border:2px solid #efe0a0;background:rgba(250,242,200,.6);"></div></div>`; }
+function creamDollop(w){ const u=w/34;
+  return `<div style="position:relative;width:${w}px;height:${Math.round(w*.9)}px;filter:drop-shadow(0 1px 2px rgba(120,90,40,.35));">
+    <div style="position:absolute;left:0;bottom:0;width:${w}px;height:${Math.round(14*u)}px;border-radius:50%;background:#fff;"></div>
+    <div style="position:absolute;left:${Math.round(5*u)}px;bottom:${Math.round(8*u)}px;width:${Math.round(24*u)}px;height:${Math.round(13*u)}px;border-radius:50%;background:#fbf8ff;"></div>
+    <div style="position:absolute;left:${Math.round(10*u)}px;bottom:${Math.round(16*u)}px;width:${Math.round(14*u)}px;height:${Math.round(11*u)}px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:#fff;"></div></div>`; }
+function heartPiece(w, col){ const c=Math.round(w*.5);
+  return `<div style="position:relative;width:${w}px;height:${Math.round(w*.92)}px;">
+    <div style="position:absolute;left:${Math.round(w*.25)}px;top:${Math.round(w*.26)}px;width:${c}px;height:${c}px;background:${col};transform:rotate(45deg);"></div>
+    <div style="position:absolute;left:0;top:${Math.round(w*.08)}px;width:${c}px;height:${c}px;border-radius:50%;background:${col};"></div>
+    <div style="position:absolute;left:${c-1}px;top:${Math.round(w*.08)}px;width:${c}px;height:${c}px;border-radius:50%;background:${col};"></div></div>`; }
+function chocoThumb(){ return `<div style="position:relative;width:46px;height:40px;">
+  <div style="position:absolute;left:0;top:6px;width:44px;height:6px;border-radius:4px;background:#5a3218;transform:rotate(-14deg);"></div>
+  <div style="position:absolute;left:2px;top:18px;width:44px;height:6px;border-radius:4px;background:#6b3d1e;transform:rotate(10deg);"></div>
+  <div style="position:absolute;left:0;top:30px;width:44px;height:6px;border-radius:4px;background:#5a3218;transform:rotate(-8deg);"></div></div>`; }
+function sugarThumb(){ let d="";
+  for(let i=0;i<14;i++){ d+=`<div style="position:absolute;left:${ir(40)}px;top:${ir(36)}px;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 2px rgba(0,0,0,.15);"></div>`; }
+  return `<div style="position:relative;width:46px;height:42px;background:rgba(240,225,190,.5);border-radius:10px;">${d}</div>`; }
+
+/* =============== data =============== */
+const MIX = {
+  flour: { lbl:"Flour", thumb: flourBag() },
+  milk:  { lbl:"Milk",  thumb: milkCarton() },
+  egg:   { lbl:"Egg",   thumb: eggArt() },
+};
+const TOP = {
+  choco: { lbl:"Chocolate",    layer:"choco",  thumb: chocoThumb() },
+  sugar: { lbl:"Sugar",        layer:"sugar",  thumb: sugarThumb() },
+  straw: { lbl:"Strawberries", count:5, w:26, thumb: strawberryPiece(34), piece:()=>strawberryPiece(22+ir(8)) },
+  banana:{ lbl:"Banana",       count:6, w:24, thumb: bananaSlice(32),     piece:()=>bananaSlice(20+ir(6)) },
+  cream: { lbl:"Whipped Cream",count:3, w:34, thumb: creamDollop(38),     piece:()=>creamDollop(30+ir(8)) },
+  hearts:{ lbl:"Candy Hearts", count:6, w:18, thumb: heartPiece(28,"#ff6b9d"), piece:()=>heartPiece(14+ir(8), ["#ff6b9d","#ff3d6e","#ff9ac9"][ir(3)]) },
+};
+
+const DIFF = {
+  easy: { s1:{ps:6,pe:12,burn:20}, s2:{ps:4,pe:9,burn:16},  turns:2.5 },
+  med:  { s1:{ps:5,pe:9,burn:15},  s2:{ps:3.5,pe:6.5,burn:12}, turns:4 },
+  hard: { s1:{ps:4,pe:6.5,burn:11},s2:{ps:3,pe:4.5,burn:9},  turns:6 },
+};
+let diff = DIFF.easy;
+document.querySelectorAll(".diff").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll(".diff").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on"); diff = DIFF[b.dataset.d];
+    if(phase==="cook1") paintBar(diff.s1); if(phase==="cook2") paintBar(diff.s2);
+  });
+});
+
+/* =============== elements =============== */
+const $ = id => document.getElementById(id);
+const shelf=$("shelf"), bowl=$("bowl"), stove=$("stove"), pan=$("pan"), crepe=$("crepe"),
+      cg=$("cg"), cc=$("cc"), sign=$("sign"), needle=$("needle"), ghost=$("ghost"),
+      rack=$("rack"), plateCrepe=$("plateCrepe"), ptops=$("ptops"), bubble=$("hintBubble"),
+      whisk=$("whisk"), stream=$("stream"), verdictRow=$("verdictRow");
+
+/* =============== phases =============== */
+const ORDER = ["mix","stir","stove","pan","pour","cook1","cook2","top","done"];
+const CHIP = { mix:"mix", stir:"stir", stove:"stove", pan:"pan", pour:"pour", cook1:"cook", cook2:"cook", top:"top", done:"top" };
+let phase = "mix";
+const added = { flour:false, milk:false, egg:false };
+let stirRad = 0, lastAng = null;
+let elapsed=0, cookStart=0, rafId=null, dinged=false;
+let doneS1=null, doneS2=null;
+
+function setPhase(p){
+  phase = p;
+  const idx = ORDER.indexOf(p);
+  document.querySelectorAll(".chip").forEach(ch=>{
+    const ci = ORDER.indexOf(ch.dataset.p==="cook"?"cook1":ch.dataset.p);
+    ch.classList.toggle("on", CHIP[p]===ch.dataset.p);
+    ch.classList.toggle("done", ci < idx && CHIP[p]!==ch.dataset.p);
+  });
+  showHint();
+}
+function showHint(){
+  const H = {
+    mix:   [bowl, "Drag the flour, milk and egg into the bowl! 🥣"],
+    stir:  [bowl, "Hold the bowl and stir round and round! 🌀"],
+    stove: [$("knob"), "Click the knob to turn on the fire! 🔥"],
+    pan:   [pan, "Drag the pan onto the fire! 🍳"],
+    pour:  [bowl, "Drag the bowl to the pan and pour! 🫗"],
+    top:   [plateCrepe, "Drag yummy toppings onto your crêpe! 🍓"],
+  };
+  const h = H[phase];
+  if(!h){ bubble.style.display="none"; return; }
+  const r = h[0].getBoundingClientRect();
+  bubble.textContent = h[1];
+  bubble.style.left = (r.left + r.width/2)+"px";
+  bubble.style.top = Math.max(6, r.top - 44)+"px";
+  bubble.style.display = "block";
+}
+
+/* =============== shelf (mix cards) =============== */
+Object.entries(MIX).forEach(([id,it])=>{
+  const c=document.createElement("div"); c.className="card"; c.dataset.id=id; c.dataset.kind="mix";
+  c.innerHTML=`<div class="thumb">${it.thumb}</div><div class="lbl">${it.lbl}</div>`;
+  shelf.appendChild(c);
+});
+/* toppings rack (hidden until plated) */
+Object.entries(TOP).forEach(([id,it])=>{
+  const c=document.createElement("div"); c.className="card"; c.dataset.id=id; c.dataset.kind="top";
+  c.innerHTML=`<div class="thumb">${it.thumb}</div><div class="lbl">${it.lbl}</div>`;
+  rack.appendChild(c);
+});
+const bonBtn=document.createElement("button"); bonBtn.id="bonBtn"; bonBtn.textContent="🇫🇷 Bon appétit!";
+rack.appendChild(bonBtn);
+
+/* =============== unified pointer handling =============== */
+let drag = null; // {type:'ing'|'top'|'pan'|'bowl'|'stir', ...}
+
+document.addEventListener("pointerdown", e=>{
+  const card = e.target.closest(".card");
+  if(card){
+    e.preventDefault();
+    const kind = card.dataset.kind;
+    if(kind==="mix" && phase!=="mix"){ return; }
+    if(kind==="top" && phase!=="top"){ return; }
+    drag = { type: kind==="mix"?"ing":"top", id: card.dataset.id, card };
+    ghost.innerHTML = (kind==="mix"?MIX:TOP)[card.dataset.id].thumb;
+    ghost.style.left=e.clientX+"px"; ghost.style.top=e.clientY+"px"; ghost.style.display="block";
+    return;
+  }
+  if(e.target.closest("#bowl")){
+    if(phase==="stir"){
+      e.preventDefault();
+      drag={type:"stir"}; lastAng=null;
+      whisk.style.display="block"; whisk.style.left=e.clientX+"px"; whisk.style.top=e.clientY+"px";
+      return;
+    }
+    if(phase==="pour"){
+      e.preventDefault();
+      const r=bowl.getBoundingClientRect();
+      drag={type:"bowl", dx:e.clientX-r.left, dy:e.clientY-r.top};
+      bowl.style.position="fixed"; bowl.style.zIndex=400; bowl.style.pointerEvents="none";
+      bowl.style.transform="rotate(-25deg) scale(.85)"; bowl.style.transformOrigin="top left";
+      moveBowl(e.clientX,e.clientY);
+      return;
+    }
+    if(phase==="mix") { showHint(); }
+    return;
+  }
+  if(e.target.closest("#pan") && phase==="pan"){
+    e.preventDefault();
+    const r=pan.getBoundingClientRect();
+    drag={type:"pan", dx:e.clientX-r.left, dy:e.clientY-r.top};
+    pan.classList.remove("hanging");
+    pan.style.position="fixed"; pan.style.zIndex=400; pan.style.pointerEvents="none";
+    pan.style.transform="none";
+    movePan(e.clientX,e.clientY);
+    return;
+  }
+});
+document.addEventListener("pointermove", e=>{
+  if(!drag) return;
+  e.preventDefault();
+  if(drag.type==="ing"||drag.type==="top"){ ghost.style.left=e.clientX+"px"; ghost.style.top=e.clientY+"px"; }
+  else if(drag.type==="pan") movePan(e.clientX,e.clientY);
+  else if(drag.type==="bowl") moveBowl(e.clientX,e.clientY);
+  else if(drag.type==="stir") doStir(e.clientX,e.clientY);
+},{passive:false});
+document.addEventListener("pointerup", e=>{
+  if(!drag) return;
+  const t=drag.type; const d=drag; drag=null;
+  if(t==="ing"||t==="top"){
+    ghost.style.display="none";
+    const under=document.elementFromPoint(e.clientX,e.clientY);
+    if(t==="ing" && under && under.closest("#bowl")) addToBowl(d.id, d.card);
+    if(t==="top" && under && under.closest("#plateSpot")) applyTopping(d.id, e.clientX, e.clientY);
+  }
+  else if(t==="pan") dropPan(e.clientX,e.clientY);
+  else if(t==="bowl") dropBowl(e.clientX,e.clientY);
+  else if(t==="stir") whisk.style.display="none";
+});
+document.addEventListener("pointercancel", ()=>{
+  if(!drag) return; const t=drag.type; drag=null;
+  ghost.style.display="none"; whisk.style.display="none";
+  if(t==="pan") dropPan(-1,-1); if(t==="bowl") dropBowl(-1,-1);
+});
+
+/* =============== 1. mix =============== */
+function addToBowl(id, card){
+  if(added[id]) return;
+  added[id]=true; card.classList.add("used");
+  if(id==="flour"){ $("flourPile").style.display="block"; say("Flour!"); }
+  if(id==="milk"){ $("milkPool").style.display="block"; say("Milk! Splash!"); }
+  if(id==="egg"){ $("yolk").style.display="block"; say("Crack goes the egg!"); }
+  if(added.flour && added.milk && added.egg){
+    setTimeout(()=>{ setPhase("stir"); $("stirbar").style.display="block";
+      say("Now stir! Move the whisk round and round!"); }, 600);
+  }
+}
+
+/* =============== 2. stir =============== */
+function doStir(x,y){
+  whisk.style.left=x+"px"; whisk.style.top=y+"px";
+  const r=bowl.getBoundingClientRect();
+  const ang=Math.atan2(y-(r.top+r.height*.35), x-(r.left+r.width/2));
+  if(lastAng!==null){
+    let da=Math.abs(ang-lastAng); if(da>Math.PI) da=2*Math.PI-da;
+    if(da<1) stirRad+=da;
+  }
+  lastAng=ang;
+  const need=diff.turns*2*Math.PI;
+  const p=Math.min(1, stirRad/need);
+  $("stirfill").style.width=(p*100)+"%";
+  // swirl visual
+  const sw=$("swirl"); sw.style.display="block";
+  if(!sw.children.length){ for(let i=0;i<3;i++){ const s=document.createElement("div"); s.className="streak"; sw.appendChild(s);} }
+  [...sw.children].forEach((s,i)=> s.style.transform=`rotate(${stirRad*57.3+i*120}deg)`);
+  if(p>.35){ $("flourPile").style.display="none"; $("yolk").style.display="none"; $("milkPool").style.display="none"; $("batterFill").style.display="block"; }
+  if(p>=1 && phase==="stir"){
+    whisk.style.display="none"; sw.style.display="none"; $("stirbar").style.display="none";
+    drag=null;
+    say("The batter is ready! Now turn on the stove!");
+    setPhase("stove");
+  }
+}
+
+/* =============== 3. stove on =============== */
+/* flames around burner */
+const burner=$("burner");
+for(let i=0;i<8;i++){
+  const f=document.createElement("div"); f.className="sflame";
+  const a=i/8*2*Math.PI;
+  f.style.left=(72+Math.cos(a)*62-8)+"px"; f.style.top=(48+Math.sin(a)*40-13)+"px";
+  f.style.animationDelay=(i*.07)+"s";
+  burner.appendChild(f);
+}
+$("knob").addEventListener("click", ()=>{
+  if(phase!=="stove"){ if(!stove.classList.contains("on")) say("Not yet! Finish the batter first!"); return; }
+  stove.classList.add("on");
+  say("The fire is on! Now put the pan on the stove!");
+  setPhase("pan");
+});
+
+/* =============== 4. pan =============== */
+function movePan(x,y){
+  pan.style.left=(x-d0(drag.dx))+"px"; pan.style.top=(y-d0(drag.dy))+"px";
+  const under=document.elementFromPoint(x,y);
+  stove.style.outline = (under && under.closest("#stove")) ? "4px dashed #ffd166" : "";
+}
+function d0(v){ return v||0; }
+function dropPan(x,y){
+  stove.style.outline="";
+  const under=(x>=0)&&document.elementFromPoint(x,y);
+  pan.style.position=""; pan.style.left=""; pan.style.top=""; pan.style.zIndex=""; pan.style.pointerEvents="";
+  if(under && under.closest("#stove")){
+    $("burnerSlot").appendChild(pan);
+    pan.style.left="0px"; pan.style.top="20px"; pan.style.transform="none"; pan.style.position="absolute";
+    say("Now pour the batter into the pan!");
+    setPhase("pour");
+  } else {
+    stove.appendChild(pan); pan.classList.add("hanging"); pan.style.position="absolute";
+    if(phase==="pan") showHint();
+  }
+}
+
+/* =============== 5. pour =============== */
+function moveBowl(x,y){
+  bowl.style.left=(x-drag.dx*.85)+"px"; bowl.style.top=(y-drag.dy*.85)+"px";
+  const under=document.elementFromPoint(x,y);
+  $("panDisc").style.boxShadow = (under && under.closest("#stove")) ?
+    "0 0 0 7px #ffd166, 0 6px 12px rgba(0,0,0,.45)" : "0 0 0 7px #3a3a42, 0 6px 12px rgba(0,0,0,.45)";
+}
+function dropBowl(x,y){
+  $("panDisc").style.boxShadow="";
+  const under=(x>=0)&&document.elementFromPoint(x,y);
+  if(under && under.closest("#stove")){
+    // pour!
+    const pr=$("panDisc").getBoundingClientRect();
+    bowl.style.left=(pr.left+pr.width/2-140)+"px"; bowl.style.top=(pr.top-150)+"px";
+    bowl.style.transform="rotate(-55deg) scale(.85)";
+    stream.style.display="block";
+    stream.style.left=(pr.left+pr.width/2-8)+"px";
+    stream.style.top=(pr.top-70)+"px"; stream.style.height="80px";
+    say("Pouring!");
+    setTimeout(()=>{
+      stream.style.display="none";
+      returnBowl(true);
+      crepe.style.display="block"; crepe.style.animation="spreadin .7s ease-out";
+      startCook(1);
+    }, 900);
+  } else returnBowl(false);
+}
+function returnBowl(emptied){
+  bowl.style.position=""; bowl.style.left=""; bowl.style.top="";
+  bowl.style.transform=""; bowl.style.zIndex=""; bowl.style.pointerEvents="";
+  if(emptied){ $("batterFill").style.display="none"; }
+  else if(phase==="pour") showHint();
+}
+
+/* =============== 6. cook & flip =============== */
+function paintBar(z){
+  const p1=z.ps/z.burn*100, p2=z.pe/z.burn*100;
+  $("cookbar").style.background=`linear-gradient(90deg,#f7e1b5 0%,#f0c878 ${p1}%,#7ed957 ${p1}%,#7ed957 ${p2}%,#6b3b1f ${p2}%,#1d120b 100%)`;
+  $("barstar").style.left=((p1+p2)/2)+"%";
+}
+function sideDiff(){ return phase==="cook1" ? diff.s1 : diff.s2; }
+function startCook(side){
+  setPhase(side===1?"cook1":"cook2");
+  bubble.style.display="none";
+  paintBar(sideDiff());
+  elapsed=0; dinged=false; cookStart=performance.now();
+  cg.style.opacity=0; cc.style.opacity=0;
+  sign.style.display="block"; sign.className=""; sign.textContent = side===1?"🔥 Cooking side 1… 🔥":"🔥 Cooking side 2… 🔥";
+  rafId=requestAnimationFrame(tick);
+}
+function tick(now){
+  if(phase!=="cook1"&&phase!=="cook2") return;
+  const z=sideDiff();
+  elapsed=(now-cookStart)/1000;
+  needle.style.left=`calc(${Math.min(elapsed,z.burn)/z.burn*100}% - 3px)`;
+  cg.style.opacity=Math.min(1, elapsed/z.ps)*0.75;
+  cc.style.opacity=elapsed>z.pe?Math.min(1,(elapsed-z.pe)/(z.burn-z.pe))*0.92:0;
+  if(!dinged && elapsed>=z.ps){
+    dinged=true;
+    if(phase==="cook1"){ ding(); sign.className="alarm"; sign.textContent="⭐ DING! FLIP IT! ⭐"; say("Ding! Flip the crêpe!"); }
+    else { ding(); setTimeout(ding,300); sign.className="alarm"; sign.textContent="⭐ DING DING! PLATE IT! ⭐"; say("Ding ding! Put it on the plate!"); }
+  }
+  if(elapsed>=z.burn+4){ phase==="cook1"?doFlip():doPlate(); return; }
+  rafId=requestAnimationFrame(tick);
+}
+stove.addEventListener("click", e=>{
+  if(e.target.closest("#knob")) return;
+  if(phase==="cook1") doFlip();
+  else if(phase==="cook2") doPlate();
+});
+function zone(e,z){ return e<z.ps?"pale":(e<=z.pe?"perfect":"burnt"); }
+function doFlip(){
+  cancelAnimationFrame(rafId);
+  doneS1={ v:zone(elapsed,diff.s1), g:cg.style.opacity, c:cc.style.opacity };
+  say("Whee!");
+  crepe.animate([
+    { transform:"translateY(0) scaleY(1)" },
+    { transform:"translateY(-70px) scaleY(.25)", offset:.5 },
+    { transform:"translateY(0) scaleY(1)" }
+  ], { duration:600, easing:"ease-out" });
+  setTimeout(()=>startCook(2), 620);
+}
+function doPlate(){
+  cancelAnimationFrame(rafId);
+  doneS2={ v:zone(elapsed,diff.s2), g:cg.style.opacity, c:cc.style.opacity };
+  sign.style.display="none";
+  crepe.style.display="none";
+  // show on plate with side-1 (presentation side) browning
+  plateCrepe.style.display="block";
+  plateCrepe.insertAdjacentHTML("afterbegin",
+    `<div class="cbrown cgold" style="opacity:${doneS1.g}"></div><div class="cbrown cchar" style="opacity:${doneS1.c}"></div>`);
+  const from=pan.getBoundingClientRect(), to=plateCrepe.getBoundingClientRect();
+  plateCrepe.animate([
+    { transform:`translate(${from.left-to.left}px, ${from.top-to.top}px) scale(.6)` },
+    { transform:"none" }
+  ], { duration:700, easing:"ease-out" });
+  // verdict
+  const vs=[doneS1.v, doneS2.v];
+  let stars, msg, voice;
+  if(vs.every(v=>v==="perfect")){ stars="⭐⭐⭐"; msg="PARFAIT!"; voice="Parfait! A perfect golden crêpe! Now add yummy toppings!"; }
+  else if(vs.includes("burnt")){ stars="⭐"; msg="A bit crispy — still yummy!"; voice="Ooh, a bit crispy — but still yummy! Add some toppings!"; }
+  else { stars="⭐⭐"; msg="Très bien!"; voice="Très bien! Nice crêpe! Now add yummy toppings!"; }
+  verdictRow.innerHTML=`${stars}<br><span style="font-size:19px">${msg}</span>`;
+  say(voice);
+  rack.style.display="flex";
+  setPhase("top");
+}
+
+/* =============== 7. toppings =============== */
+let toppingCount=0;
+function applyTopping(id, cx, cy){
+  const it=TOP[id];
+  const r=plateCrepe.getBoundingClientRect();
+  if(it.layer==="choco"){
+    for(let i=0;i<4;i++){
+      const l=document.createElement("div");
+      Object.assign(l.style,{ position:"absolute", left:(8+ir(15))+"%", top:(15+i*18+ir(8))+"%",
+        width:(55+ir(25))+"%", height:"6px", borderRadius:"4px",
+        background: i%2?"#6b3d1e":"#5a3218", transform:`rotate(${ir(24)-12}deg)`, pointerEvents:"none" });
+      ptops.appendChild(l);
+    }
+  } else if(it.layer==="sugar"){
+    for(let i=0;i<26;i++){
+      const s=document.createElement("div");
+      const a=Math.random()*Math.PI*2, rad=Math.sqrt(Math.random())*.42;
+      Object.assign(s.style,{ position:"absolute", left:(50+Math.cos(a)*rad*100)+"%", top:(50+Math.sin(a)*rad*100)+"%",
+        width:"4px", height:"4px", borderRadius:"50%", background:"#fff",
+        boxShadow:"0 0 2px rgba(0,0,0,.2)", pointerEvents:"none" });
+      ptops.appendChild(s);
+    }
+  } else {
+    for(let i=0;i<it.count;i++){
+      const a=Math.random()*Math.PI*2, rad=Math.sqrt(Math.random())*(r.width*.30);
+      const p=document.createElement("div"); p.className="piece";
+      p.innerHTML=it.piece();
+      p.style.left=Math.round(r.width/2+Math.cos(a)*rad-it.w/2)+"px";
+      p.style.top=Math.round(r.height/2+Math.sin(a)*rad*.6-it.w/2)+"px";
+      p.style.transform=`rotate(${ir(40)-20}deg)`;
+      p.addEventListener("pointerdown", ev=>ev.stopPropagation());
+      p.addEventListener("click", ev=>{ if(phase!=="top") return; ev.stopPropagation(); p.remove(); });
+      ptops.appendChild(p);
+    }
+  }
+  toppingCount++;
+  bubble.style.display="none";
+  bonBtn.style.display="inline-block";
+}
+
+/* =============== 8. bon appétit =============== */
+bonBtn.addEventListener("click", ()=>{
+  setPhase("done");
+  const vs=[doneS1.v,doneS2.v];
+  $("finStars").textContent = vs.every(v=>v==="perfect")?"⭐⭐⭐":(vs.includes("burnt")?"⭐":"⭐⭐");
+  $("finale").style.display="flex";
+  celebrate();
+  say("Bon appétit! What a delicious crêpe! Congratulations, chef Emma!");
+});
+$("againBtn").addEventListener("click", ()=>location.reload());
+
+/* =============== sound + voice + confetti =============== */
+let actx=null;
+function ding(){
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    [[1318.5,0],[1568,.18]].forEach(([f,d])=>{
+      const o=actx.createOscillator(), g=actx.createGain();
+      o.frequency.value=f; o.type="sine"; o.connect(g); g.connect(actx.destination);
+      const t0=actx.currentTime+d;
+      g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(.4,t0+.02);
+      g.gain.exponentialRampToValueAtTime(.0001,t0+.9);
+      o.start(t0); o.stop(t0+1);
+    });
+  }catch(e){}
+}
+function say(t){
+  try{ const u=new SpeechSynthesisUtterance(t); u.rate=.95; u.pitch=1.3; speechSynthesis.cancel(); speechSynthesis.speak(u);}catch(e){}
+}
+const confetti=$("confetti");
+const EMO=["🥞","🍓","🍫","⭐","✨","❤️","🍌","🌈","🎉","💖"];
+function celebrate(){
+  confetti.style.display="block"; confetti.innerHTML="";
+  for(let i=0;i<70;i++){
+    const c=document.createElement("div"); c.className="conf";
+    c.textContent=EMO[i%EMO.length];
+    c.style.left=((i*137)%100)+"%";
+    const dur=2.6+((i*53)%16)/10, delay=((i*29)%20)/10;
+    c.style.animation=`fall ${dur}s linear ${delay}s forwards`;
+    c.style.fontSize=(18+((i*17)%20))+"px";
+    confetti.appendChild(c);
+  }
+  setTimeout(()=>{ confetti.style.display="none"; },4200);
+}
+
+setPhase("mix");
+window.addEventListener("resize", showHint);
+</script>
+</body>
+</html>
