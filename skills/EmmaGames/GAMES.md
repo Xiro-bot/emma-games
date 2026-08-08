@@ -8,6 +8,24 @@ _Newest changes on top within each game. One game per section._
 
 ---
 
+## 🥞 Emma's Crêpe Café
+- **Folder:** `~/code/emma-games/games/crepe-cafe/index.html` (single file — double-click to play)
+- **What it is:** A crêpe-maker game (Chiro's spec), sequel to Pizza Kitchen with the same cook-bar engine but a full multi-step recipe. Step chips at the top guide the flow: 🥣 Mix → 🌀 Stir → 🔥 Stove → 🍳 Pan → 🫗 Pour → ⏰ Cook & Flip → 🍓 Toppings. A bouncing hint bubble points at whatever to do next.
+- **Mechanics:** drag **flour bag / milk carton / egg** (CSS-drawn cards) into the blue bowl (egg shows a cracked yolk). Then **stir by holding the bowl and moving the mouse in circles** — a whisk follows the pointer, batter swirls, progress bar fills (2.5 turns on Easy). Click the **stove knob** (flames ring the burner), drag the **pan** from its hook onto the fire, then drag the **bowl** over the pan — it tilts and pours a batter stream, crêpe spreads in. **Two cook phases** with the zoned cook bar: first DING → click stove to **flip** (jump + squash animation, snapshot of side-1 browning), second DING-DING → click to **plate** (crêpe flies to the plate showing side 1 up). Verdict = worst of both sides: PARFAIT ⭐⭐⭐ / Très bien ⭐⭐ / "a bit crispy — still yummy" ⭐ — **never a fail state**, toppings always follow.
+- **Toppings rack** (appears after plating): chocolate drizzle (layer of brown strips), sugar dusting (white dots), strawberries, banana slices, whipped-cream dollops, candy hearts — scatter pieces, tap to remove. Then the **🇫🇷 Bon appétit!** button → confetti + stars + "Congratulations, chef Emma!" voice.
+- **Difficulty:** 🐢 Easy (default: 6s window side 1, 5s side 2, 2.5 stir turns) / 🧑‍🍳 Chef / 🔥 Super Chef (more turns, tighter windows). Auto-flips/auto-plates 4s past burnt so it never stalls.
+- **Status:** Built 2026-08-08, awaiting Emma's first playtest.
+
+### Open ideas / feedback to revisit
+- Stir-in-circles may need tuning for a 5yo mouse grip (turns needed / motion sensitivity).
+- Could add butter-in-the-pan step, folding the crêpe, or making a stack of several crêpes.
+- Reset is location.reload() — fine for one crêpe at a time; revisit if we add a multi-crêpe stack.
+
+### History
+- **2026-08-08** — First build: full mix→stir→stove→pan→pour→flip→plate→toppings flow, two-bell cooking, no-fail verdicts, 6 toppings, bon appétit finale.
+
+---
+
 ## 🍕 Emma's Pizza Kitchen
 - **Folder:** `~/code/emma-games/games/pizza-kitchen/index.html` (single file — double-click to play)
 - **What it is:** A pizza-maker game (Chiro's spec). Left: wooden counter with a dough on a board. Right: **wood-fire brick oven** (animated CSS flames + logs, glowing mouth). Bottom: ingredient rack of 8 CSS-drawn cards — Tomato Sauce, Cheese (layers), Basil, Pepperoni, Mushrooms, Olives, Corn, **Heart Ham** (pink hearts, for Emma). Cursor is an oven mitt 🧤.
