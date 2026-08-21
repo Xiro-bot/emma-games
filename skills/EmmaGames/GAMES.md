@@ -8,6 +8,26 @@ _Newest changes on top within each game. One game per section._
 
 ---
 
+## 🤡 Clown Balloon Pop
+- **Folder:** `~/code/emma-games/games/clown-balloons/index.html` (single file — double-click to play)
+- **What it is:** Emma's idea. A big-top circus stage (striped tent roof, red curtains, spotlight cones, gold ring, audience silhouettes bobbing at the bottom). A **CSS-drawn clown** stands centre stage — white face, red nose, blue eyes, orange hair tufts, party hat, ruffle collar, polka-dot suit — and **throws balloons out to the public**, alternating arms (arm swings on each throw).
+- **Balloons:** 5 shapes (round, oval, long, ⭐ star, 💗 heart) × 8 colours, all CSS gradients + shine + knot + curly SVG string. They arc out of his hands, then float up with a gentle sway.
+- **Mechanics:** the cursor is a **needle** (SVG cursor, hotspot at the tip). Click a balloon → 💥 burst of rubber shreds + "POP!" + WebAudio pop. **Purple balloons have a visible 🍬 candy inside**, a purple glow and ✨ sparkles — popping one sends the candy flying into the **candy jar** HUD (jar fills up, ding sound, counter `n / 10`).
+- **Win:** at **10 candies** → clown hops for joy, confetti of 🎈🍬🎉⭐, fanfare, and a spoken "Congratulations Emma! You collected all the candies!" **No timer, no fail state** — popping a plain balloon is just fun, never a penalty.
+- **Hit-testing is deliberately forgiving:** the whole bounding box + 18px counts, and a purple balloon always wins over an overlapping plain one, so a candy click is never stolen.
+- **Difficulty:** 🐢 Easy (default: big 128px balloons, slow 26px/s rise, 45% purple) / 🤹 Medium / 🎪 Super Circus (smaller, faster, fewer purple).
+- **Status:** Built 2026-08-21, awaiting Emma's first playtest.
+
+### Open ideas / feedback to revisit
+- Purple ratio + rise speed are the two Easy dials most likely to need tuning after she plays.
+- Could add a balloon-animal bonus (the long balloons twisting into a dog), or the clown reacting when a balloon is popped.
+- Could let the jar be tapped at the end to eat the candies.
+
+### History
+- **2026-08-21** — First build: circus stage + CSS clown, 5 balloon shapes, needle cursor, purple-candy mechanic, jar HUD, 10-candy win with confetti + voice, 3 difficulties. Added the Clown Balloon Pop card to the arcade landing page.
+
+---
+
 ## 🥞 Emma's Crêpe Café
 - **Folder:** `~/code/emma-games/games/crepe-cafe/index.html` (single file — double-click to play)
 - **What it is:** A crêpe-maker game (Chiro's spec), sequel to Pizza Kitchen with the same cook-bar engine but a full multi-step recipe. Step chips at the top guide the flow: 🥣 Mix → 🌀 Stir → 🔥 Stove → 🍳 Pan → 🫗 Pour → ⏰ Cook & Flip → 🍓 Toppings. A bouncing hint bubble points at whatever to do next.
