@@ -12,19 +12,23 @@ _Newest changes on top within each game. One game per section._
 - **Folder:** `~/code/emma-games/games/clown-balloons/index.html` (single file — double-click to play)
 - **What it is:** Emma's idea. A big-top circus stage (striped tent roof, red curtains, spotlight cones, gold ring, audience silhouettes bobbing at the bottom). A **CSS-drawn clown** stands centre stage — white face, red nose, blue eyes, orange hair tufts, party hat, ruffle collar, polka-dot suit — and **throws balloons out to the public**, alternating arms (arm swings on each throw).
 - **Balloons:** 5 shapes (round, oval, long, ⭐ star, 💗 heart) × 8 colours, all CSS gradients + shine + knot + curly SVG string. They arc out of his hands, then float up with a gentle sway.
-- **Mechanics:** the cursor is a **needle** (SVG cursor, hotspot at the tip). Click a balloon → 💥 burst of rubber shreds + "POP!" + WebAudio pop. **Purple balloons have a visible 🍬 candy inside**, a purple glow and ✨ sparkles — popping one sends the candy flying into the **candy jar** HUD (jar fills up, ding sound, counter `n / 10`).
+- **Mechanics:** the cursor is a **needle** (SVG cursor, hotspot at the tip). Click a balloon → 💥 burst of rubber shreds + "POP!" + WebAudio pop. **Candy is HIDDEN — 1 balloon in 5 holds one and nothing on the outside gives it away**, so it's a hunt: pop as many as you can. A candy pop reveals a golden shockwave ring + "CANDY!" + sparkles, and the candy flies into the **candy jar** HUD (jar fills up, ding sound, counter `n / 10`).
 - **Win:** at **10 candies** → clown hops for joy, confetti of 🎈🍬🎉⭐, fanfare, and a spoken "Congratulations Emma! You collected all the candies!" **No timer, no fail state** — popping a plain balloon is just fun, never a penalty.
-- **Hit-testing is deliberately forgiving:** the whole bounding box + 18px counts, and a purple balloon always wins over an overlapping plain one, so a candy click is never stolen.
-- **Difficulty:** 🐢 Easy (default: big 128px balloons, slow 26px/s rise, 45% purple) / 🤹 Medium / 🎪 Super Circus (smaller, faster, fewer purple).
+- **Hit-testing is deliberately forgiving:** the whole bounding box + 18px counts; nearest centre wins when balloons overlap.
+- **Difficulty:** 🐢 Easy (default: 124px balloons, slow 26px/s rise, 20% candy, spawn 780ms) / 🤹 Medium (17%) / 🎪 Super Circus (14%, small + fast). ~50 pops per win at 20% — the `candy` dial in `DIFF` is the length knob.
 - **Status:** Built 2026-08-21, awaiting Emma's first playtest.
 
 ### Open ideas / feedback to revisit
-- Purple ratio + rise speed are the two Easy dials most likely to need tuning after she plays.
+- Candy rate (1 in 5) + rise speed are the two Easy dials most likely to need tuning after she plays.
 - Could add a balloon-animal bonus (the long balloons twisting into a dog), or the clown reacting when a balloon is popped.
 - Could let the jar be tapped at the end to eat the candies.
 
+### Open ideas / feedback to revisit (cont.)
+- Length: 10 candies at 1-in-5 ≈ 50 pops (~2 min of solid popping). If that's too long for her, raise `candy` or drop `GOAL`.
+
 ### History
-- **2026-08-21** — First build: circus stage + CSS clown, 5 balloon shapes, needle cursor, purple-candy mechanic, jar HUD, 10-candy win with confetti + voice, 3 difficulties. Added the Clown Balloon Pop card to the arcade landing page.
+- **2026-08-21** — Chiro's change: **candy is now hidden in any balloon (1 in 5), with no visual tell** — purple became an ordinary colour, the candy-inside/glow/sparkle cues were removed, and the hit-test candy bias was dropped. Added a golden shockwave ring on the reveal so the surprise lands. Easy now spawns faster (780ms, up to 11 on screen) so there's always something to pop.
+- **2026-08-21** — First build: circus stage + CSS clown, 5 balloon shapes, needle cursor, purple-candy mechanic (visible candy inside purple balloons), jar HUD, 10-candy win with confetti + voice, 3 difficulties. Added the Clown Balloon Pop card to the arcade landing page.
 
 ---
 

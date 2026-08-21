@@ -2,7 +2,8 @@
 
 _Running list of lessons. Add a line whenever we learn something. Newest on top._
 
-- **Show the reward inside the target.** Purple balloons carry a visible 🍬 + glow + sparkles, so "which one do I want?" needs no reading and no explaining.
+- **Hidden rewards beat marked ones — if popping is fun by itself.** We first marked the candy balloons; Emma's dad asked for the candy to be hidden (1 in 5, no tell) so every pop is a little suspense. Works because the action itself (pop!) is already the fun part, so a "miss" costs nothing. Mark the target instead when the action is a chore.
+- **When the reward is a surprise, make the reveal loud.** Golden shockwave ring + "CANDY!" + sparkles + flight into the jar — the moment has to be unmistakable since nothing announced it in advance.
 - **Make hit-testing forgiving, and bias it toward the rewarding target.** Full bounding box + a margin, and when two targets overlap, the one that pays out wins the click — a 5yo reads a stolen click as "the game is broken".
 - **Sandbox / no-lose modes work too.** Not every game needs a win/lose loop — a dress-up sandbox (drag clothes onto models) lets her create freely, with an on-demand "Start Show!" reward button. Give creative play a big optional celebration rather than a fail state.
 - **Draw clothes/props in CSS, not emoji.** Emoji read as "stickers" (her complaint on cups). Hand-draw with gradients + shapes.
