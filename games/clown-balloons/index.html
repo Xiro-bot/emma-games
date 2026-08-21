@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎪 Clown Balloon Pop 🎈</title>
+<meta name="description" content="Pop the clown's balloons with your needle — the purple ones are full of candy!">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: "Comic Sans MS", "Chalkboard SE", "Trebuchet MS", sans-serif;
+    background: #2a1140;
+    -webkit-user-select: none; user-select: none;
+    cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="54" height="54" viewBox="0 0 54 54"><polygon points="2,2 12,6 45,39 40,45" fill="%23e8edf5" stroke="%237c8799" stroke-width="1.6" stroke-linejoin="round"/><polygon points="2,2 7,4 5,9" fill="%23ffffff"/><ellipse cx="44.5" cy="43.5" rx="4.6" ry="4.6" fill="none" stroke="%237c8799" stroke-width="2.4"/><path d="M46 47 q7 3 4 7" stroke="%23ff4d8d" stroke-width="3" fill="none" stroke-linecap="round"/></svg>') 2 2, crosshair;
+  }
+
+  /* ---------------- STAGE / BIG TOP ---------------- */
+  #stage { position: fixed; inset: 0; overflow: hidden; }
+
+  /* tent roof stripes */
+  .tent-roof {
+    position: absolute; top: 0; left: -10%; width: 120%; height: 26vh;
+    background: repeating-linear-gradient(100deg,
+      #e03a3a 0 6%, #fff4e0 6% 12%);
+    clip-path: polygon(0 0, 100% 0, 100% 55%, 92% 88%, 84% 55%, 76% 88%, 68% 55%,
+      60% 88%, 52% 55%, 44% 88%, 36% 55%, 28% 88%, 20% 55%, 12% 88%, 4% 55%, 0 82%);
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.35));
+    z-index: 2;
+  }
+  .tent-pole {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 26px; height: 10vh; background: linear-gradient(90deg,#c9a227,#ffe9a3 45%,#c9a227);
+    border-radius: 6px; z-index: 1;
+  }
+  .flag { position: absolute; top: 1vh; left: 50%; font-size: 34px; transform: translateX(6px);
+    z-index: 3; animation: wave 2.4s ease-in-out infinite; }
+  @keyframes wave { 0%,100%{transform:translateX(6px) rotate(-6deg);} 50%{transform:translateX(10px) rotate(8deg);} }
+
+  /* back wall */
+  .back {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 45% at 50% 62%, rgba(255,240,180,.30), rgba(255,240,180,0) 70%),
+      linear-gradient(180deg, #3b1a5c 0%, #52226f 45%, #6b2b7d 100%);
+  }
+  /* spotlight cones */
+  .cone { position: absolute; top: 8vh; width: 34vw; height: 70vh; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,210,.30), rgba(255,255,210,0) 78%);
+    filter: blur(4px); }
+  .cone.l { left: 4vw; transform: skewX(14deg); }
+  .cone.r { right: 4vw; transform: skewX(-14deg); }
+
+  /* side curtains */
+  .curtain { position: absolute; top: 0; bottom: 0; width: 15vw; z-index: 4; pointer-events: none;
+    background: repeating-linear-gradient(90deg,#8e1030 0 14px,#c0173f 14px 30px,#6d0a24 30px 40px);
+    box-shadow: inset 0 0 60px rgba(0,0,0,.6); }
+  .curtain.l { left: 0; border-radius: 0 40px 60px 0; }
+  .curtain.r { right: 0; border-radius: 40px 0 0 60px; }
+
+  /* stage floor + ring */
+  .floor { position: absolute; left: 0; right: 0; bottom: 0; height: 30vh; z-index: 3;
+    background: linear-gradient(180deg,#b8843e 0%, #8a5c26 40%, #5d3a15 100%); }
+  .ring { position: absolute; left: 50%; transform: translateX(-50%); bottom: 20vh;
+    width: 62vw; height: 12vh; border-radius: 50%; z-index: 3;
+    background: radial-gradient(ellipse at 50% 35%, #f3d8a0, #d8a95e 60%, #a8762f);
+    box-shadow: 0 8px 0 #7a5220, 0 14px 26px rgba(0,0,0,.45); }
+
+  /* audience */
+  .crowd { position: absolute; left: 0; right: 0; bottom: 0; height: 15vh; z-index: 6;
+    display: flex; align-items: flex-end; justify-content: space-around; pointer-events: none; }
+  .head { width: 5.4vh; height: 5.4vh; border-radius: 50% 50% 44% 44%; position: relative;
+    background: #1b0b2b; opacity: .85; animation: bob 2.6s ease-in-out infinite; }
+  .head::after { content:""; position:absolute; left:-42%; right:-42%; top: 82%; height: 9vh;
+    background:#1b0b2b; border-radius: 40% 40% 0 0; }
+  @keyframes bob { 0%,100%{ transform: translateY(0);} 50%{ transform: translateY(-6px);} }
+
+  /* ---------------- CLOWN ---------------- */
+  #clown { position: absolute; left: 50%; bottom: 17vh; transform: translateX(-50%);
+    z-index: 5; width: 240px; height: 300px; transform-origin: 50% 100%; }
+  #clown.cheer { animation: cheerHop .5s ease-in-out infinite; }
+  @keyframes cheerHop { 0%,100%{ transform: translateX(-50%) translateY(0);} 50%{ transform: translateX(-50%) translateY(-22px);} }
+
+  .c-body { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+    width: 132px; height: 140px; border-radius: 46% 46% 40% 40%;
+    background:
+      radial-gradient(circle at 26% 22%, #ffe9a8 7px, transparent 8px),
+      radial-gradient(circle at 70% 34%, #8be2ff 7px, transparent 8px),
+      radial-gradient(circle at 40% 60%, #ffd0f0 7px, transparent 8px),
+      radial-gradient(circle at 76% 74%, #ffe9a8 7px, transparent 8px),
+      linear-gradient(160deg,#3fb6ff,#1f7fd6);
+    box-shadow: inset -8px -8px 18px rgba(0,0,0,.18); }
+  .c-buttons { position: absolute; left: 50%; bottom: 34px; transform: translateX(-50%);
+    display: flex; flex-direction: column; gap: 12px; }
+  .c-buttons i { width: 15px; height: 15px; border-radius: 50%;
+    background: radial-gradient(circle at 32% 30%, #fff59a, #f5b400); box-shadow: 0 2px 3px rgba(0,0,0,.3); }
+  .c-collar { position: absolute; left: 50%; bottom: 128px; transform: translateX(-50%);
+    width: 150px; height: 34px; border-radius: 50%;
+    background: repeating-conic-gradient(from 0deg, #ff4d8d 0 18deg, #ffd93d 18deg 36deg);
+    box-shadow: 0 3px 6px rgba(0,0,0,.35); z-index: 3; }
+
+  .c-arm { position: absolute; bottom: 96px; width: 74px; height: 22px; border-radius: 14px;
+    background: linear-gradient(180deg,#4fc0ff,#2586d8); z-index: 2; }
+  .c-arm .hand { position: absolute; top: -8px; width: 34px; height: 34px; border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #fff, #e8e8ee 60%, #c9c9d4);
+    border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,.3); }
+  #armL { left: 6px; transform-origin: 100% 50%; transform: rotate(24deg); transition: transform .18s ease; }
+  #armL .hand { left: -22px; }
+  #armR { right: 6px; transform-origin: 0% 50%; transform: rotate(-24deg); transition: transform .18s ease; }
+  #armR .hand { right: -22px; }
+  #armL.throw { transform: rotate(-52deg); }
+  #armR.throw { transform: rotate(52deg); }
+
+  .c-head { position: absolute; left: 50%; bottom: 138px; transform: translateX(-50%);
+    width: 126px; height: 122px; border-radius: 50%; z-index: 4;
+    background: radial-gradient(circle at 36% 30%, #ffffff, #ffeef0 62%, #f3d8dd);
+    box-shadow: inset -6px -8px 14px rgba(0,0,0,.10), 0 4px 8px rgba(0,0,0,.3); }
+  .hair { position: absolute; bottom: 176px; width: 74px; height: 68px; z-index: 3; }
+  .hair i { position: absolute; width: 40px; height: 40px; border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #ff9a3d, #e0510f); box-shadow: inset -4px -4px 8px rgba(0,0,0,.2); }
+  .hair.l { left: 28px; } .hair.r { right: 28px; }
+  .hair.l i:nth-child(1){ left:0; top:24px; } .hair.l i:nth-child(2){ left:16px; top:0; width:36px;height:36px; }
+  .hair.l i:nth-child(3){ left:34px; top:26px; width:32px;height:32px; }
+  .hair.r i:nth-child(1){ right:0; top:24px; } .hair.r i:nth-child(2){ right:16px; top:0; width:36px;height:36px; }
+  .hair.r i:nth-child(3){ right:34px; top:26px; width:32px;height:32px; }
+
+  .hat { position: absolute; left: 50%; bottom: 236px; transform: translateX(-50%) rotate(-12deg); z-index: 5; }
+  .hat .cone2 { width: 0; height: 0; border-left: 26px solid transparent; border-right: 26px solid transparent;
+    border-bottom: 54px solid #e03a3a; filter: drop-shadow(0 3px 4px rgba(0,0,0,.35)); }
+  .hat .pom { position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+    width: 24px; height: 24px; border-radius: 50%;
+    background: radial-gradient(circle at 32% 30%, #fff59a, #f5b400); }
+
+  .eye { position: absolute; top: 40px; width: 20px; height: 22px; border-radius: 50%;
+    background: #fff; border: 3px solid #2b2b3a; z-index: 5; }
+  .eye::after { content:""; position:absolute; left: 4px; top: 6px; width: 10px; height: 10px;
+    border-radius: 50%; background:#2452c9; }
+  .eye.l { left: 26px; } .eye.r { right: 26px; }
+  .brow { position: absolute; top: 26px; width: 26px; height: 9px; border-radius: 9px 9px 0 0;
+    background:#e0510f; z-index: 5; }
+  .brow.l { left: 22px; transform: rotate(-12deg); } .brow.r { right: 22px; transform: rotate(12deg); }
+  .cheek { position: absolute; top: 66px; width: 22px; height: 15px; border-radius: 50%;
+    background: rgba(255,90,140,.55); filter: blur(1px); z-index: 5; }
+  .cheek.l { left: 12px; } .cheek.r { right: 12px; }
+  .nose { position: absolute; left: 50%; top: 56px; transform: translateX(-50%);
+    width: 34px; height: 34px; border-radius: 50%; z-index: 6;
+    background: radial-gradient(circle at 32% 28%, #ff9a9a, #e01f1f 60%, #a80f0f);
+    box-shadow: 0 3px 6px rgba(0,0,0,.3); }
+  .smile { position: absolute; left: 50%; top: 82px; transform: translateX(-50%);
+    width: 62px; height: 30px; border-radius: 0 0 62px 62px; background:#d1143c;
+    border: 3px solid #8e0c28; border-top: none; z-index: 5; }
+  .smile::after { content:""; position:absolute; left: 50%; bottom: 2px; transform: translateX(-50%);
+    width: 30px; height: 12px; border-radius: 0 0 30px 30px; background:#ff7aa2; }
+
+  /* ---------------- BALLOONS ---------------- */
+  .balloon { position: absolute; z-index: 8; will-change: transform; }
+  .balloon .body { position: absolute; inset: 0; overflow: hidden;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.35)); }
+  .balloon .shine { position: absolute; left: 16%; top: 12%; width: 30%; height: 24%;
+    border-radius: 50%; background: rgba(255,255,255,.75); filter: blur(3px); }
+  .balloon .shine2 { position: absolute; left: 22%; top: 40%; width: 10%; height: 14%;
+    border-radius: 50%; background: rgba(255,255,255,.45); filter: blur(2px); }
+  .balloon .knot { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%);
+    width: 16px; height: 14px; border-radius: 4px 4px 8px 8px; }
+  .balloon svg.string { position: absolute; left: 50%; top: 100%; transform: translateX(-50%);
+    overflow: visible; }
+  .balloon.purple { filter: drop-shadow(0 0 14px rgba(200,120,255,.95)); }
+  .balloon .spark { position: absolute; font-size: 20px; pointer-events: none;
+    animation: twinkle 1.1s ease-in-out infinite; }
+  @keyframes twinkle { 0%,100%{ transform: scale(.6); opacity:.4;} 50%{ transform: scale(1.15); opacity:1;} }
+  .balloon .candy-in { position: absolute; left: 50%; top: 46%; transform: translate(-50%,-50%);
+    font-size: 30px; opacity: .92; filter: drop-shadow(0 2px 3px rgba(0,0,0,.4));
+    animation: candyBob 1.6s ease-in-out infinite; }
+  @keyframes candyBob { 0%,100%{ transform: translate(-50%,-50%) rotate(-10deg);} 50%{ transform: translate(-50%,-56%) rotate(10deg);} }
+
+  /* pop bits */
+  .bit { position: absolute; z-index: 9; pointer-events: none; border-radius: 40% 60% 55% 45%; }
+  .popword { position: absolute; z-index: 12; pointer-events: none; font-weight: bold;
+    font-size: 42px; color: #fff; text-shadow: 0 0 10px #ff4d8d, 0 3px 0 #b81f57;
+    animation: popword .7s ease-out forwards; }
+  @keyframes popword { 0%{ transform: translate(-50%,-50%) scale(.4); opacity: 1;}
+    100%{ transform: translate(-50%,-140%) scale(1.4); opacity: 0;} }
+  .flyc { position: absolute; z-index: 13; font-size: 40px; pointer-events: none;
+    transition: transform 1s cubic-bezier(.4,-0.3,.3,1), opacity .9s ease-in;
+    filter: drop-shadow(0 3px 5px rgba(0,0,0,.4)); }
+
+  /* ---------------- HUD ---------------- */
+  #hud { position: fixed; top: 14px; right: 18px; z-index: 20; display: flex; align-items: center; gap: 14px; }
+  .jar { position: relative; width: 88px; height: 100px; }
+  .jar .glass { position: absolute; inset: 0; top: 14px; border-radius: 14px 14px 26px 26px;
+    background: linear-gradient(120deg, rgba(255,255,255,.30), rgba(255,255,255,.10));
+    border: 4px solid rgba(255,255,255,.75); box-shadow: inset 0 0 18px rgba(255,255,255,.35), 0 6px 14px rgba(0,0,0,.4);
+    overflow: hidden; }
+  .jar .lid { position: absolute; left: 50%; top: 0; transform: translateX(-50%);
+    width: 74px; height: 18px; border-radius: 8px;
+    background: linear-gradient(180deg,#ff7ab8,#d42a7d); box-shadow: 0 3px 5px rgba(0,0,0,.35); z-index: 2; }
+  .jar .fill { position: absolute; left: 0; right: 0; bottom: 0; display: flex; flex-wrap: wrap-reverse;
+    justify-content: center; align-content: flex-start; padding: 3px; gap: 1px; }
+  .jar .fill span { font-size: 17px; line-height: 1; }
+  .count { font-size: 34px; color: #fff; text-shadow: 0 3px 0 rgba(0,0,0,.35); white-space: nowrap; }
+  .count b { color: #ffd93d; font-size: 44px; }
+
+  #titlebar { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 20;
+    text-align: center; color: #fff; pointer-events: none;
+    padding: 8px 26px 10px; border-radius: 22px;
+    background: rgba(30,8,50,.55); backdrop-filter: blur(3px);
+    box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+  #titlebar h1 { font-size: 26px; text-shadow: 0 3px 0 rgba(0,0,0,.4); }
+  #titlebar p { font-size: 16px; color: #ffe9a8; text-shadow: 0 2px 3px rgba(0,0,0,.5); }
+
+  .btnrow { position: fixed; left: 18px; bottom: 16px; z-index: 20; display: flex; gap: 10px; }
+  .btn { font-family: inherit; font-size: 17px; padding: 10px 18px; border: none; border-radius: 999px;
+    background: linear-gradient(180deg,#fff,#ffe3f2); color: #b02a6a; font-weight: bold;
+    box-shadow: 0 5px 0 rgba(0,0,0,.3); cursor: inherit; }
+  .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.3); }
+  .btn.sel { background: linear-gradient(180deg,#ffd93d,#ffae00); color:#7a4a00; }
+
+  /* ---------------- OVERLAYS ---------------- */
+  .overlay { position: fixed; inset: 0; z-index: 40; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 18px; text-align: center; color: #fff;
+    background: radial-gradient(circle at 50% 45%, rgba(80,20,120,.82), rgba(20,5,40,.94)); }
+  .overlay.hide { display: none; }
+  .overlay h2 { font-size: clamp(30px,6vw,58px);
+    background: linear-gradient(90deg,#ff4d4d,#ff9a3d,#ffe24d,#4dff7a,#4dd2ff,#a64dff,#ff4dd2);
+    background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shimmer 5s linear infinite; }
+  @keyframes shimmer { to { background-position: 200% center; } }
+  .overlay p { font-size: clamp(17px,2.6vw,24px); max-width: 640px; line-height: 1.5; }
+  .demo { display: flex; align-items: center; gap: 26px; margin: 4px 0 2px; }
+  .demoballoon { position: relative; width: 96px; height: 114px; }
+  .bigbtn { font-family: inherit; font-size: 30px; padding: 16px 44px; border: none; border-radius: 999px;
+    background: linear-gradient(180deg,#7dff9a,#22b34c); color: #06331a; font-weight: bold;
+    box-shadow: 0 8px 0 #14702f, 0 14px 24px rgba(0,0,0,.45); cursor: inherit;
+    animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{ transform: scale(1);} 50%{ transform: scale(1.06);} }
+  .diffrow { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .conf { position: fixed; z-index: 45; font-size: 30px; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div class="back"></div>
+  <div class="cone l"></div><div class="cone r"></div>
+  <div class="tent-pole"></div>
+  <div class="tent-roof"></div>
+  <div class="flag">🚩</div>
+  <div class="curtain l"></div><div class="curtain r"></div>
+  <div class="floor"></div>
+  <div class="ring"></div>
+
+  <div id="clown">
+    <div class="c-arm" id="armL"><div class="hand"></div></div>
+    <div class="c-arm" id="armR"><div class="hand"></div></div>
+    <div class="c-body"></div>
+    <div class="c-buttons"><i></i><i></i><i></i></div>
+    <div class="c-collar"></div>
+    <div class="hair l"><i></i><i></i><i></i></div>
+    <div class="hair r"><i></i><i></i><i></i></div>
+    <div class="c-head">
+      <div class="brow l"></div><div class="brow r"></div>
+      <div class="eye l"></div><div class="eye r"></div>
+      <div class="cheek l"></div><div class="cheek r"></div>
+      <div class="nose"></div>
+      <div class="smile"></div>
+    </div>
+    <div class="hat"><div class="pom"></div><div class="cone2"></div></div>
+  </div>
+
+  <div class="crowd" id="crowd"></div>
+</div>
+
+<div id="titlebar">
+  <h1>🎪 Clown Balloon Pop 🎈</h1>
+  <p id="tip">Pop the <b>purple</b> balloons to collect candy! 🍬</p>
+</div>
+
+<div id="hud">
+  <div class="jar">
+    <div class="glass"><div class="fill" id="jarFill"></div></div>
+    <div class="lid"></div>
+  </div>
+  <div class="count"><b id="cnt">0</b> / 10 🍬</div>
+</div>
+
+<div class="btnrow">
+  <button class="btn" id="againBtn">🔄 Start over</button>
+</div>
+
+<!-- START -->
+<div class="overlay" id="startOv">
+  <h2>🎪 Clown Balloon Pop 🎈</h2>
+  <div class="demo">
+    <div class="demoballoon" id="demoB"></div>
+    <div style="text-align:left">
+      <p>The clown throws balloons to the crowd!</p>
+      <p>Click them with your <b>needle</b> to POP them 💥</p>
+      <p><b>Purple balloons have candy inside 🍬</b><br>Collect <b>10 candies</b> to win. No hurry — no timer!</p>
+    </div>
+  </div>
+  <div class="diffrow">
+    <button class="btn sel" data-diff="easy">🐢 Easy</button>
+    <button class="btn" data-diff="med">🤹 Medium</button>
+    <button class="btn" data-diff="hard">🎪 Super Circus</button>
+  </div>
+  <button class="bigbtn" id="startBtn">▶ Start!</button>
+</div>
+
+<!-- WIN -->
+<div class="overlay hide" id="winOv">
+  <h2>🎉 CONGRATULATIONS! 🎉</h2>
+  <p style="font-size:clamp(22px,4vw,34px)">You collected all <b>10 candies</b>! 🍬🍭🍬</p>
+  <div style="font-size:64px">🤡🎈🎈🎈🍬</div>
+  <button class="bigbtn" id="winAgain">🔄 Play again</button>
+</div>
+
+<script>
+/* ============================ SETTINGS ============================ */
+const DIFF = {
+  easy: { size: 128, rise: 26, spawn: 1150, purple: .45, max: 8,  drift: 26, sway: 16 },
+  med:  { size: 102, rise: 44, spawn:  900, purple: .34, max: 10, drift: 42, sway: 22 },
+  hard: { size: 84,  rise: 66, spawn:  720, purple: .26, max: 12, drift: 60, sway: 28 }
+};
+let diff = 'easy';
+const GOAL = 10;
+
+const COLORS = [
+  { n:'red',    a:'#ff5c5c', b:'#c01414' },
+  { n:'blue',   a:'#5cc8ff', b:'#1466c0' },
+  { n:'yellow', a:'#ffe25c', b:'#d69a00' },
+  { n:'green',  a:'#7dff8f', b:'#1a9c39' },
+  { n:'orange', a:'#ffa85c', b:'#d65a00' },
+  { n:'pink',   a:'#ff9ad4', b:'#d61f8f' },
+  { n:'teal',   a:'#7df0e0', b:'#12a08f' }
+];
+const PURPLE = { n:'purple', a:'#d9a8ff', b:'#8b1fd6' };
+const SHAPES = ['round','oval','heart','star','long'];
+
+/* ============================ STATE ============================ */
+const stage = document.getElementById('stage');
+const clown = document.getElementById('clown');
+const armL = document.getElementById('armL'), armR = document.getElementById('armR');
+const cntEl = document.getElementById('cnt'), jarFill = document.getElementById('jarFill');
+let balloons = [], candies = 0, running = false, lastT = 0, spawnAcc = 0, nextHand = 0;
+
+/* crowd */
+(function(){
+  const c = document.getElementById('crowd');
+  for (let i=0;i<14;i++){
+    const h = document.createElement('div');
+    h.className='head';
+    h.style.animationDelay = (i*0.19).toFixed(2)+'s';
+    h.style.background = ['#1b0b2b','#2a1040','#170822'][i%3];
+    c.appendChild(h);
+  }
+})();
+
+/* ============================ SOUND ============================ */
+let ac = null;
+function actx(){ if(!ac) ac = new (window.AudioContext||window.webkitAudioContext)(); return ac; }
+function popSound(big){
+  const a = actx(), t = a.currentTime;
+  // noise burst
+  const len = 0.09, buf = a.createBuffer(1, a.sampleRate*len, a.sampleRate), d = buf.getChannelData(0);
+  for (let i=0;i<d.length;i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/d.length, 3);
+  const src = a.createBufferSource(); src.buffer = buf;
+  const g = a.createGain(); g.gain.value = big? .5 : .35;
+  const f = a.createBiquadFilter(); f.type='bandpass'; f.frequency.value = big? 900 : 1500; f.Q.value=.8;
+  src.connect(f); f.connect(g); g.connect(a.destination); src.start(t);
+  // little downward blip
+  const o = a.createOscillator(), og = a.createGain();
+  o.type='triangle'; o.frequency.setValueAtTime(big?520:700, t);
+  o.frequency.exponentialRampToValueAtTime(big?120:220, t+0.13);
+  og.gain.setValueAtTime(.22, t); og.gain.exponentialRampToValueAtTime(.001, t+0.15);
+  o.connect(og); og.connect(a.destination); o.start(t); o.stop(t+0.16);
+}
+function candySound(){
+  const a = actx(), t = a.currentTime;
+  [1046,1318,1568].forEach((f,i)=>{
+    const o=a.createOscillator(), g=a.createGain();
+    o.type='sine'; o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+i*0.06); g.gain.linearRampToValueAtTime(.22,t+i*0.06+0.02);
+    g.gain.exponentialRampToValueAtTime(.001,t+i*0.06+0.4);
+    o.connect(g); g.connect(a.destination); o.start(t+i*0.06); o.stop(t+i*0.06+0.45);
+  });
+}
+function fanfare(){
+  const a = actx(), t = a.currentTime;
+  [523,659,784,1046,1318].forEach((f,i)=>{
+    const o=a.createOscillator(), g=a.createGain();
+    o.type='triangle'; o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+i*0.14); g.gain.linearRampToValueAtTime(.25,t+i*0.14+0.03);
+    g.gain.exponentialRampToValueAtTime(.001,t+i*0.14+0.7);
+    o.connect(g); g.connect(a.destination); o.start(t+i*0.14); o.stop(t+i*0.14+0.75);
+  });
+}
+function say(text, rate, pitch){
+  try {
+    if (!window.speechSynthesis) return;
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = rate||.92; u.pitch = pitch||1.35; u.volume = 1;
+    speechSynthesis.speak(u);
+  } catch(e){}
+}
+
+/* ============================ BALLOON DRAWING ============================ */
+function shapeCSS(el, shape, col, w, h){
+  const grad = 'radial-gradient(circle at 32% 26%, '+col.a+', '+col.b+' 78%)';
+  el.style.background = grad;
+  if (shape === 'round'){
+    el.style.borderRadius = '50% 50% 48% 48% / 55% 55% 45% 45%';
+  } else if (shape === 'oval'){
+    el.style.borderRadius = '50%';
+  } else if (shape === 'long'){
+    el.style.borderRadius = '46% 46% 46% 46% / 22% 22% 20% 20%';
+  } else if (shape === 'star'){
+    el.style.clipPath = 'polygon(50% 0%,61% 34%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)';
+  } else if (shape === 'heart'){
+    el.style.clipPath = "path('M "+(w/2)+" "+(h*0.95)+" C "+(w*0.05)+" "+(h*0.62)+", "+(w*0.03)+" "+(h*0.22)+", "+(w*0.27)+" "+(h*0.12)+
+      " C "+(w*0.4)+" "+(h*0.06)+", "+(w*0.5)+" "+(h*0.18)+", "+(w/2)+" "+(h*0.28)+
+      " C "+(w*0.5)+" "+(h*0.18)+", "+(w*0.6)+" "+(h*0.06)+", "+(w*0.73)+" "+(h*0.12)+
+      " C "+(w*0.97)+" "+(h*0.22)+", "+(w*0.95)+" "+(h*0.62)+", "+(w/2)+" "+(h*0.95)+" Z')";
+  }
+}
+function dims(shape, s){
+  if (shape === 'round') return [s, s*1.17];
+  if (shape === 'oval')  return [s*0.78, s*1.35];
+  if (shape === 'long')  return [s*0.52, s*1.7];
+  if (shape === 'star')  return [s*1.25, s*1.25];
+  if (shape === 'heart') return [s*1.18, s*1.1];
+  return [s, s*1.15];
+}
+function makeBalloon(shape, col, s){
+  const [w,h] = dims(shape, s);
+  const el = document.createElement('div');
+  el.className = 'balloon' + (col.n === 'purple' ? ' purple' : '');
+  el.style.width = w+'px'; el.style.height = h+'px';
+
+  const body = document.createElement('div');
+  body.className = 'body';
+  shapeCSS(body, shape, col, w, h);
+  const sh = document.createElement('div'); sh.className='shine';
+  const sh2 = document.createElement('div'); sh2.className='shine2';
+  body.appendChild(sh); body.appendChild(sh2);
+  el.appendChild(body);
+
+  const knot = document.createElement('div');
+  knot.className = 'knot'; knot.style.background = col.b;
+  if (shape === 'heart') knot.style.bottom = '-4px';
+  el.appendChild(knot);
+
+  const svgns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgns,'svg');
+  svg.setAttribute('class','string'); svg.setAttribute('width','40'); svg.setAttribute('height','70');
+  const p = document.createElementNS(svgns,'path');
+  p.setAttribute('d','M20 4 q-14 16 0 30 q14 16 2 32');
+  p.setAttribute('stroke','rgba(255,255,255,.85)'); p.setAttribute('stroke-width','2.4');
+  p.setAttribute('fill','none'); p.setAttribute('stroke-linecap','round');
+  svg.appendChild(p); el.appendChild(svg);
+
+  if (col.n === 'purple'){
+    const candy = document.createElement('div');
+    candy.className = 'candy-in'; candy.textContent = '🍬';
+    if (shape === 'long') candy.style.fontSize = '22px';
+    el.appendChild(candy);
+    [['-10%','8%','0s'],['92%','30%','.35s'],['20%','88%','.7s']].forEach(function(pos){
+      const sp = document.createElement('div');
+      sp.className='spark'; sp.textContent='✨';
+      sp.style.left = pos[0]; sp.style.top = pos[1]; sp.style.animationDelay = pos[2];
+      el.appendChild(sp);
+    });
+  }
+  return { el: el, w: w, h: h };
+}
+
+/* demo balloon on the start screen */
+(function(){
+  const d = makeBalloon('round', PURPLE, 84);
+  d.el.style.position='relative';
+  document.getElementById('demoB').appendChild(d.el);
+})();
+
+/* ============================ GAME ============================ */
+function handPos(side){
+  const r = clown.getBoundingClientRect();
+  return side === 0
+    ? { x: r.left + 14, y: r.top + r.height * 0.52 }
+    : { x: r.right - 14, y: r.top + r.height * 0.52 };
+}
+function spawn(){
+  const cfg = DIFF[diff];
+  const side = nextHand; nextHand = 1 - nextHand;
+  (side === 0 ? armL : armR).classList.add('throw');
+  setTimeout(function(){ (side === 0 ? armL : armR).classList.remove('throw'); }, 240);
+
+  const isP = Math.random() < cfg.purple;
+  const col = isP ? PURPLE : COLORS[(Math.random()*COLORS.length)|0];
+  const shape = SHAPES[(Math.random()*SHAPES.length)|0];
+  const s = cfg.size * (0.88 + Math.random()*0.28);
+  const b = makeBalloon(shape, col, s);
+  const p = handPos(side);
+
+  const bal = {
+    el: b.el, w: b.w, h: b.h, purple: isP, dead: false,
+    x: p.x - b.w/2,
+    y: p.y - b.h/2,
+    vx: (side === 0 ? -1 : 1) * (cfg.drift * (0.6 + Math.random()*0.9)),
+    vy: -(cfg.rise * (0.75 + Math.random()*0.55)) - 40,
+    swayA: cfg.sway * (0.5 + Math.random()),
+    swayS: 0.6 + Math.random()*0.8,
+    t: Math.random()*6,
+    rot: (Math.random()*20 - 10)
+  };
+  b.el.style.transform = 'translate('+bal.x+'px,'+bal.y+'px)';
+  stage.appendChild(b.el);
+  balloons.push(bal);
+}
+
+/* Forgiving hit test: whole bounding box counts (+ a little margin),
+   and a purple balloon always wins over an overlapping plain one. */
+stage.addEventListener('pointerdown', function(ev){
+  if (!running) return;
+  const mx = ev.clientX, my = ev.clientY, M = 18;
+  let best = null, bestD = Infinity;
+  for (const b of balloons){
+    if (b.dead) continue;
+    if (mx < b.x - M || mx > b.x + b.w + M || my < b.y - M || my > b.y + b.h + M) continue;
+    const dx = mx - (b.x + b.w/2), dy = my - (b.y + b.h/2);
+    let d = Math.sqrt(dx*dx + dy*dy);
+    if (b.purple) d -= 400;                 // strong preference for candy balloons
+    if (d < bestD){ bestD = d; best = b; }
+  }
+  if (best){ ev.preventDefault(); pop(best); }
+});
+
+function pop(b){
+  if (b.dead || !running) return;
+  b.dead = true;
+  const cx = b.x + b.w/2, cy = b.y + b.h/2;
+  const col = getComputedStyle(b.el.querySelector('.body')).backgroundImage;
+  b.el.remove();
+  balloons = balloons.filter(function(x){ return x !== b; });
+  popSound(b.purple);
+  burst(cx, cy, b.purple, col);
+
+  const word = document.createElement('div');
+  word.className = 'popword';
+  word.textContent = b.purple ? 'CANDY!' : 'POP!';
+  word.style.left = cx+'px'; word.style.top = cy+'px';
+  stage.appendChild(word);
+  setTimeout(function(){ word.remove(); }, 700);
+
+  if (b.purple) collectCandy(cx, cy);
+}
+
+function burst(cx, cy, purple, colImage){
+  for (let i=0;i<14;i++){
+    const bit = document.createElement('div');
+    bit.className = 'bit';
+    const sz = 8 + Math.random()*14;
+    bit.style.width = sz+'px'; bit.style.height = (sz*0.7)+'px';
+    bit.style.backgroundImage = colImage;
+    bit.style.left = cx+'px'; bit.style.top = cy+'px';
+    stage.appendChild(bit);
+    const ang = Math.random()*Math.PI*2, dist = 60 + Math.random()*130;
+    const dx = Math.cos(ang)*dist, dy = Math.sin(ang)*dist + 40;
+    bit.animate([
+      { transform: 'translate(-50%,-50%) rotate(0deg)', opacity: 1 },
+      { transform: 'translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px)) rotate('+(Math.random()*720-360)+'deg)', opacity: 0 }
+    ], { duration: 700 + Math.random()*300, easing: 'cubic-bezier(.2,.7,.4,1)' })
+      .onfinish = function(){ bit.remove(); };
+  }
+  if (purple){
+    for (let i=0;i<6;i++){
+      const s = document.createElement('div');
+      s.className='bit'; s.style.borderRadius='0';
+      s.textContent = '✨';
+      s.style.font = '22px serif'; s.style.left = cx+'px'; s.style.top = cy+'px';
+      stage.appendChild(s);
+      const ang = Math.random()*Math.PI*2, dist = 50 + Math.random()*90;
+      s.animate([
+        { transform:'translate(-50%,-50%) scale(.4)', opacity:1 },
+        { transform:'translate(calc(-50% + '+Math.cos(ang)*dist+'px), calc(-50% + '+Math.sin(ang)*dist+'px)) scale(1.3)', opacity:0 }
+      ], { duration: 800 }).onfinish = function(){ s.remove(); };
+    }
+  }
+}
+
+function collectCandy(cx, cy){
+  const jar = document.querySelector('.jar').getBoundingClientRect();
+  const fly = document.createElement('div');
+  fly.className = 'flyc';
+  fly.textContent = ['🍬','🍭','🍫','🧁'][(Math.random()*4)|0];
+  fly.style.left = cx+'px'; fly.style.top = cy+'px';
+  fly.style.transform = 'translate(-50%,-50%)';
+  document.body.appendChild(fly);
+  const dx = (jar.left + jar.width/2) - cx, dy = (jar.top + jar.height/2 + 10) - cy;
+  requestAnimationFrame(function(){
+    fly.style.transform = 'translate(calc(-50% + '+dx+'px), calc(-50% + '+dy+'px)) scale(.55) rotate(360deg)';
+  });
+  setTimeout(function(){
+    fly.remove();
+    candies++;
+    cntEl.textContent = candies;
+    const s = document.createElement('span');
+    s.textContent = ['🍬','🍭','🍫','🧁'][(Math.random()*4)|0];
+    jarFill.appendChild(s);
+    candySound();
+    document.querySelector('.jar').animate(
+      [{transform:'scale(1)'},{transform:'scale(1.22)'},{transform:'scale(1)'}], {duration:340});
+    if (candies >= GOAL) win();
+    else if (candies === GOAL - 1) { document.getElementById('tip').innerHTML = '<b>One more candy!</b> 🍬'; }
+  }, 1000);
+}
+
+function win(){
+  running = false;
+  clown.classList.add('cheer');
+  balloons.forEach(function(b){ b.el.remove(); });
+  balloons = [];
+  document.getElementById('winOv').classList.remove('hide');
+  fanfare();
+  confetti();
+  setTimeout(function(){ say('Congratulations Emma! You collected all the candies!', .9, 1.4); }, 350);
+}
+
+function confetti(){
+  const bits = ['🎈','🍬','🎉','⭐','🎪','🍭','💖','🤡'];
+  for (let i=0;i<70;i++){
+    setTimeout(function(){
+      const c = document.createElement('div');
+      c.className = 'conf';
+      c.textContent = bits[(Math.random()*bits.length)|0];
+      c.style.left = (Math.random()*100)+'vw';
+      c.style.top = '-60px';
+      document.body.appendChild(c);
+      c.animate([
+        { transform:'translateY(0) rotate(0deg)', opacity:1 },
+        { transform:'translateY(110vh) rotate('+(Math.random()*720-360)+'deg)', opacity:.9 }
+      ], { duration: 2600 + Math.random()*2200, easing:'linear' })
+        .onfinish = function(){ c.remove(); };
+    }, i*45);
+  }
+}
+
+/* ============================ LOOP ============================ */
+function tick(now){
+  requestAnimationFrame(tick);
+  if (!running) { lastT = now; return; }
+  const dt = Math.min(0.05, (now - lastT)/1000); lastT = now;
+  const cfg = DIFF[diff];
+
+  spawnAcc += dt*1000;
+  if (spawnAcc >= cfg.spawn && balloons.length < cfg.max){ spawnAcc = 0; spawn(); }
+
+  const W = window.innerWidth, H = window.innerHeight;
+  for (let i = balloons.length-1; i >= 0; i--){
+    const b = balloons[i];
+    b.t += dt;
+    b.vy += 14*dt;                     // gravity easing the throw
+    if (b.vy > -cfg.rise) b.vy = -cfg.rise;   // then float up steadily
+    b.x += (b.vx + Math.sin(b.t*b.swayS)*b.swayA) * dt;
+    b.y += b.vy * dt;
+    const tilt = Math.sin(b.t*b.swayS)*6 + b.rot*0.3;
+    b.el.style.transform = 'translate('+b.x+'px,'+b.y+'px) rotate('+tilt+'deg)';
+    if (b.y + b.h < -60 || b.x + b.w < -140 || b.x > W + 140){
+      b.el.remove(); balloons.splice(i,1);
+    }
+  }
+}
+requestAnimationFrame(tick);
+
+/* ============================ UI ============================ */
+document.querySelectorAll('[data-diff]').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('[data-diff]').forEach(function(b){ b.classList.remove('sel'); });
+    btn.classList.add('sel');
+    diff = btn.dataset.diff;
+  });
+});
+function startGame(){
+  document.getElementById('startOv').classList.add('hide');
+  document.getElementById('winOv').classList.add('hide');
+  clown.classList.remove('cheer');
+  balloons.forEach(function(b){ b.el.remove(); });
+  balloons = []; candies = 0; spawnAcc = 9999; nextHand = 0;
+  cntEl.textContent = '0'; jarFill.innerHTML = '';
+  document.getElementById('tip').innerHTML = 'Pop the <b>purple</b> balloons to collect candy! 🍬';
+  running = true;
+  try { actx().resume(); } catch(e){}
+  say('Pop the purple balloons!', .95, 1.4);
+}
+document.getElementById('startBtn').addEventListener('click', startGame);
+document.getElementById('winAgain').addEventListener('click', startGame);
+document.getElementById('againBtn').addEventListener('click', startGame);
+</script>
+</body>
+</html>
