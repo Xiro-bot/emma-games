@@ -8,6 +8,27 @@ _Newest changes on top within each game. One game per section._
 
 ---
 
+## 💖 Letter Balloons (typing game)
+- **Folder:** `~/code/emma-games/games/letter-balloons/index.html` (single file — double-click to play)
+- **Goal:** Chiro's ask — teach Emma (almost 6, can't read yet but knows letters) to type **without looking at her hands**. Keyboard-driven by design (the one exception to mouse-only).
+- **Two phases per word:** ① **Pop** — CSS heart balloons rise slowly carrying big letters; pressing the matching key pops the balloon (heart-shard burst + POP!) and the letter flies into its tile in the word tray. ② **Type** — "Your turn! Type EMMA all by yourself!" — she retypes the whole word one keypress at a time. Wrong key = tile wobble + soft boop, never advances, never punishes.
+- **No-look trick:** an **on-screen keyboard** at the bottom mirrors her physical one and the target key glows gold (pulsing) — she finds keys on the screen, not by staring at her hands. **⌨️ QWERTZ/QWERTY toggle** in the HUD (persisted in localStorage) so the on-screen layout matches the real keyboard — set this right on first play!
+- **Words:** 5 per session, always starting with **EMMA** 👧, then 4 random from CAT/SUN/DOG/BEE/PIG/STAR/CAKE/FISH/LOVE — each with an emoji picture cue since she can't read. Word list = `WORDS` array, trivial to extend.
+- **Reward:** per word — confetti + fanfare + spoken spelling ("E, M, M, A… Emma! Bravo Emma! Bravo!"). After 5 words — trophy overlay, double fanfare, "You are a typing star!".
+- **Difficulty:** 🐢 Easy (default: one balloon at a time, slow, key always highlighted, ghost letters in tiles) / 🦋 Medium (2 decoy balloons, hint only after 3s stuck) / 🌟 Star Typist (4 decoys, faster, **no hint, no ghosts** = true no-look typing). Decoy pops are a fun fizzle — no reward, no penalty. Escaped balloons just respawn.
+- **Status:** Built 2026-08-24, headless-tested full loop (pop → type → bravo, wrong-key handling, hint key). Awaiting Emma's first playtest.
+
+### Open ideas / feedback to revisit
+- **Set the QWERTZ/QWERTY toggle** to match their real keyboard on first launch.
+- Word language: currently English words + English voice. Could switch to French words (CHAT, SOLEIL…) + fr-FR voice if that fits Emma better.
+- Balloon size (110px) and Easy rise speed (30px/s) are the tuning dials; letters per word could grow (5–6 letter words) as she improves.
+- Could add: finger-color coding (home-row pedagogy), a progress sticker book across sessions, or her typing speed as a gentle star rating.
+
+### History
+- **2026-08-24** — First build: heart balloons, two-phase pop-then-type loop, on-screen QWERTZ/QWERTY keyboard with golden hint key, EMMA-first word list with picture cues, spoken spelling + bravo, 5-word session with trophy finale, 3 difficulties. Added arcade card.
+
+---
+
 ## 🤡 Clown Balloon Pop
 - **Folder:** `~/code/emma-games/games/clown-balloons/index.html` (single file — double-click to play)
 - **What it is:** Emma's idea. A big-top circus stage (striped tent roof, red curtains, spotlight cones, gold ring, audience silhouettes bobbing at the bottom). A **CSS-drawn clown** stands centre stage — white face, red nose, blue eyes, orange hair tufts, party hat, ruffle collar, polka-dot suit — and **throws balloons out to the public**, alternating arms (arm swings on each throw).

@@ -2,6 +2,9 @@
 
 _Running list of lessons. Add a line whenever we learn something. Newest on top._
 
+- **She can't read but knows letters** (almost 6, as of Aug 2026) — words in games need a picture cue + the word spoken aloud; letters themselves are fair game.
+- **Keyboard games: put a mirror keyboard on screen.** For no-look typing, highlight the target key on an on-screen keyboard so she finds keys on the screen instead of staring at her hands. Layout must match the physical keyboard (QWERTZ/QWERTY toggle).
+
 - **Hidden rewards beat marked ones — if popping is fun by itself.** We first marked the candy balloons; Emma's dad asked for the candy to be hidden (1 in 5, no tell) so every pop is a little suspense. Works because the action itself (pop!) is already the fun part, so a "miss" costs nothing. Mark the target instead when the action is a chore.
 - **When the reward is a surprise, make the reveal loud.** Golden shockwave ring + "CANDY!" + sparkles + flight into the jar — the moment has to be unmistakable since nothing announced it in advance.
 - **Make hit-testing forgiving, and bias it toward the rewarding target.** Full bounding box + a margin, and when two targets overlap, the one that pays out wins the click — a 5yo reads a stolen click as "the game is broken".
