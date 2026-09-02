@@ -2,6 +2,12 @@
 
 _Running list of lessons. Add a line whenever we learn something. Newest on top._
 
+- **A recipe panel teaches; the spoken step does the work.** She can't read, so the on-screen ingredient/step list is for *recognising* (pictures + ✓ + a gold highlight on the current line) while the actual instruction is spoken. Both together = she can follow a real recipe.
+- **Show only what the current step needs.** In the bakery only the current step's ingredient cards appear on the shelf, pulsing. Wrong-thing-at-the-wrong-time can't happen, so the order itself is what she learns — no scolding needed.
+- **Count multiples out loud.** "One! Two! Three!" as she drags the third egg in turns a chore into counting practice.
+- **Scale the whole scene to the screen.** A multi-station scene should scale *up* on a big screen, not just down on a small one — bigger targets are strictly better for a 5yo. (`fitStage()` in cake-bakery.)
+- **Watch what the hint bubble covers.** A bubble anchored above a target can land on top of the very cards she needs to drag — clamp it below them.
+
 - **She can't read but knows letters** (almost 6, as of Aug 2026) — words in games need a picture cue + the word spoken aloud; letters themselves are fair game.
 - **Keyboard games: put a mirror keyboard on screen.** For no-look typing, highlight the target key on an on-screen keyboard so she finds keys on the screen instead of staring at her hands. Layout must match the physical keyboard (QWERTZ/QWERTY toggle).
 

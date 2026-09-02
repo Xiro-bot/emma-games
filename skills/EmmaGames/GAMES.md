@@ -8,6 +8,33 @@ _Newest changes on top within each game. One game per section._
 
 ---
 
+## 🎂 Emma's Cake Bakery
+- **Folder:** `~/code/emma-games/games/cake-bakery/index.html` (single file — double-click to play)
+- **What it is:** Chiro's spec — a cooking *simulator* built to teach real recipes. Pick a cake, follow the ordered steps, decorate, add candles. A **📜 My Recipe panel** on the left lists the ingredients with quantities (ticked ✓ as she uses them) and the numbered steps (current one highlighted gold, done ones green) — she can't read, so every step is also **spoken aloud** and each ingredient is a hand-drawn CSS card.
+- **4 cakes, each a real recipe** (data-driven — `RECIPES` in the script; adding a cake = adding one object):
+  - 🥛 **Yoghurt cake** — the classic pot-measured gâteau au yaourt: yoghurt → 2 pots sugar → 3 eggs → mix → 3 pots flour + baking powder → oil → mix → tin → bake 30 min/180°.
+  - 🍫 **Chocolate cake** — melt chocolate + butter in the **saucepan on the stove**, pour into the bowl, sugar, 3 eggs, mix, flour, mix, bake 25 min.
+  - 🌈 **Rainbow layer cake** — butter+sugar → **electric mixer** → 4 eggs → flour+powder → milk → mix → share between **4 tins** → **colour each one** → bake → **stack the 4 layers** with cream between.
+  - ☕ **Tiramisu** — **no oven**: warm coffee on the stove, beat eggs+sugar, fold in mascarpone, **dip 6 biscuits in the coffee** (each hops into the dish), pour the cream over, **chill in the fridge**.
+- **Stations:** prep bench (ingredient shelf + big bowl, whisk stir-in-circles + hold-down electric mixer) · a **range** (gas hob with saucepan on top, oven below with a °C display, browning glow and the zoned cook bar + DING) · a **fridge** (tiramisu only) · a cake stand.
+- **Verbs implemented:** add · stir · blend · heat · pourInto · pourTin · colour · bake · chill · dip · stack · decorate. Only the ingredients the *current* step needs appear on the shelf (pulsing pink), and multiples count out loud ("One! Two! Three!") — that's what teaches the order.
+- **Decoration:** 10 toppings (whipped cream, strawberries, cherries, choc chips, smarties, sprinkles, candy hearts, gold stars, banana, chocolate drizzle; cocoa dust for tiramisu) scattered on the cake's top ellipse, tap a piece to remove. Then **6 striped candles** — drag them on, **🔥 Light the candles!**, spoken "Happy birthday", then click each flame (or 😮‍💨 Blow them out!) → puff + confetti + fanfare.
+- **Finale:** the actual cake she decorated is cloned into the overlay, with her star rating and **the whole recipe listed back as numbered steps**.
+- **No fail state:** bake verdicts are ⭐⭐⭐ perfect / ⭐⭐ a bit pale / ⭐ a bit crispy — the frosting hides it either way; auto-pulls 4s past burnt so it never stalls.
+- **Difficulty:** 🐢 Easy (default: 2 stir turns, 2.5s blend, 6–13s perfect bake window) / 🧁 Baker / 👩‍🍳 Super Chef.
+- **Status:** Built 2026-09-02. Headless-tested: all 4 recipes played end-to-end (every step, candles lit + blown, finale) with zero JS errors. Awaiting Emma's first playtest.
+
+### Open ideas / feedback to revisit
+- The recipe panel is English text — could be French (gâteau au yaourt, tiramisù) with a fr-FR voice.
+- Could add: butter-and-flour the tin, a whole-cake **slice-and-eat** moment at the end, a "make it for someone" birthday name, or a printable recipe card of what she made.
+- Stir-in-circles reused from Crêpe Café — watch whether a 5yo mouse grip manages it, or whether the hold-down mixer is the friendlier one (it needs no motion).
+- The stove is only used by 2 of the 4 recipes; the fridge by 1. Fine, but new cakes should spread the appliances around.
+
+### History
+- **2026-09-02** — First build: cake picker with CSS-drawn cake previews, data-driven recipe engine (12 step verbs), recipe panel with spoken steps, range + oven + fridge, toppings and candles with a light/blow-out moment, finale that recaps the recipe. Added the arcade card.
+
+---
+
 ## 💖 Letter Balloons (typing game)
 - **Folder:** `~/code/emma-games/games/letter-balloons/index.html` (single file — double-click to play)
 - **Goal:** Chiro's ask — teach Emma (almost 6, can't read yet but knows letters) to type **without looking at her hands**. Keyboard-driven by design (the one exception to mouse-only).
