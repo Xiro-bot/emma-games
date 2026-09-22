@@ -2,6 +2,14 @@
 
 _Running list of lessons. Add a line whenever we learn something. Newest on top._
 
+## About Emma (keep current)
+- Age 5, almost 6 as of Aug 2026. Lost her **first tooth** in June 2026 — that milestone sparked the first game.
+- Plays on a computer with a **mouse**. Games should be mouse-driven, not keyboard (see the mirror-keyboard lesson below for the exception).
+- Loves: treasure, gold coins, diamonds, hearts, rainbows, fairies, magic wands.
+- Needs **Easy by default** — she told us the first version was "too hard." Always ship the gentlest setting first and let difficulty scale up.
+
+## Lessons
+
 - **A recipe panel teaches; the spoken step does the work.** She can't read, so the on-screen ingredient/step list is for *recognising* (pictures + ✓ + a gold highlight on the current line) while the actual instruction is spoken. Both together = she can follow a real recipe.
 - **Show only what the current step needs.** In the bakery only the current step's ingredient cards appear on the shelf, pulsing. Wrong-thing-at-the-wrong-time can't happen, so the order itself is what she learns — no scolding needed.
 - **Count multiples out loud.** "One! Two! Three!" as she drags the third egg in turns a chore into counting practice.
