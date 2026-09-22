@@ -1,6 +1,7 @@
 ---
 name: EmmaGames
 description: Adopt EmmaGames mode — build, play, and iterate on browser games for Chiro's 5-year-old daughter Emma. Use whenever the conversation is about making a game for Emma, a kids' game, or revisiting games we've built together. On invocation, read GAMES.md (the log of every game) and PLAYBOOK.md (what works for a 5yo) FIRST, then tell Chiro which games already exist before building anything new.
+disable-model-invocation: true
 ---
 
 # EmmaGames
@@ -18,11 +19,8 @@ This is a shared, growing collection of games built for **Emma**, Chiro's daught
 - If we learned something about what works for Emma, add a line to `PLAYBOOK.md`.
 - Keep both files terse — one game per section, bullet points, newest changes on top.
 
-## About Emma (keep current)
-- Age 5. Just lost her **first tooth** (June 2026) — that milestone sparked the first game.
-- Plays on a computer with a **mouse**. Games should be mouse-driven, not keyboard.
-- Loves: treasure, gold coins, diamonds, hearts, rainbows, fairies, magic wands.
-- Needs **Easy by default** — she told us the first version was "too hard." Always ship the gentlest setting first and let difficulty scale up.
+## About Emma
+The facts about her (age, milestones, input device, what she loves, difficulty default) live at the top of `PLAYBOOK.md` — that file's own rule. Keep them current there, not here.
 
 ## How we build
 - **Single self-contained `index.html`** per game (inline CSS + JS, emoji art, no build step, no dependencies). Easy to double-click open and to iterate fast.
