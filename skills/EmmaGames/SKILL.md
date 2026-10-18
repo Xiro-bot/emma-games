@@ -32,3 +32,7 @@ The facts about her (age, milestones, input device, what she loves, difficulty d
 ## Working style with Chiro
 - Ship a playable version, then ask 2–4 specific tuning questions (difficulty, speed, length, sound).
 - When he reports a bug ("can't see the coin", "looks like stickers"), diagnose the actual cause and fix it — don't just restyle.
+
+## The site (moved from Claude's memory 2026-10-18)
+
+The repo `~/code/emma-games` is **public** on GitHub (Chiro is aware; it can be made private on request) so that GitHub Pages serves the arcade free at https://xiro-bot.github.io/emma-games/ from `main`. Every game needs a card on the root `index.html`; a push redeploys the site in about a minute — commit and push at the end of every session.
