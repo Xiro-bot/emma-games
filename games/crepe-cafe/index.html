@@ -104,7 +104,6 @@
                       radial-gradient(circle at 30% 60%, rgba(190,120,40,.5) 8%, transparent 22%),
                       radial-gradient(circle at 65% 30%, rgba(190,120,40,.5) 8%, transparent 22%),
                       radial-gradient(circle at 60% 70%, rgba(190,120,40,.45) 10%, transparent 24%); }
-  .cchar { background:radial-gradient(circle, rgba(50,28,12,.5) 30%, rgba(28,15,6,.92) 85%); }
   @keyframes spreadin { from { transform:scale(.15); opacity:0; } to { transform:scale(1); opacity:1; } }
 
   #sign { position:absolute; left:50%; top:-34px; transform:translateX(-50%); white-space:nowrap; z-index:5;
@@ -207,7 +206,6 @@
         <div id="panHandle"></div>
         <div id="crepe">
           <div class="cbrown cgold" id="cg"></div>
-          <div class="cbrown cchar" id="cc"></div>
         </div>
       </div>
     </div>
@@ -305,11 +303,14 @@ const TOP = {
   hearts:{ lbl:"Candy Hearts", count:6, w:18, thumb: heartPiece(28,"#ff6b9d"), piece:()=>heartPiece(14+ir(8), ["#ff6b9d","#ff3d6e","#ff9ac9"][ir(3)]) },
 };
 
+/* ps = seconds until golden (DING). The crêpe never burns: once golden it stays golden and waits for her. */
 const DIFF = {
-  easy: { s1:{ps:6,pe:12,burn:20}, s2:{ps:4,pe:9,burn:16},  turns:2.5 },
-  med:  { s1:{ps:5,pe:9,burn:15},  s2:{ps:3.5,pe:6.5,burn:12}, turns:4 },
-  hard: { s1:{ps:4,pe:6.5,burn:11},s2:{ps:3,pe:4.5,burn:9},  turns:6 },
+  easy: { s1:{ps:6}, s2:{ps:4},   turns:2.5 },
+  med:  { s1:{ps:5}, s2:{ps:3.5}, turns:4 },
+  hard: { s1:{ps:4}, s2:{ps:3},   turns:6 },
 };
+const BAR = 1.5;      // the bar spans ps*BAR seconds; the needle parks at its end, in the green
+const REMIND = 7;     // seconds between reminder dings while the golden crêpe waits
 let diff = DIFF.easy;
 document.querySelectorAll(".diff").forEach(b=>{
   b.addEventListener("click", ()=>{
@@ -322,7 +323,7 @@ document.querySelectorAll(".diff").forEach(b=>{
 /* =============== elements =============== */
 const $ = id => document.getElementById(id);
 const shelf=$("shelf"), bowl=$("bowl"), stove=$("stove"), pan=$("pan"), crepe=$("crepe"),
-      cg=$("cg"), cc=$("cc"), sign=$("sign"), needle=$("needle"), ghost=$("ghost"),
+      cg=$("cg"), sign=$("sign"), needle=$("needle"), ghost=$("ghost"),
       rack=$("rack"), plateCrepe=$("plateCrepe"), ptops=$("ptops"), bubble=$("hintBubble"),
       whisk=$("whisk"), stream=$("stream"), verdictRow=$("verdictRow");
 
@@ -332,7 +333,7 @@ const CHIP = { mix:"mix", stir:"stir", stove:"stove", pan:"pan", pour:"pour", co
 let phase = "mix";
 const added = { flour:false, milk:false, egg:false };
 let stirRad = 0, lastAng = null;
-let elapsed=0, cookStart=0, rafId=null, dinged=false;
+let elapsed=0, cookStart=0, rafId=null, dinged=false, nextRemind=0;
 let doneS1=null, doneS2=null;
 
 function setPhase(p){
@@ -564,9 +565,9 @@ function returnBowl(emptied){
 
 /* =============== 6. cook & flip =============== */
 function paintBar(z){
-  const p1=z.ps/z.burn*100, p2=z.pe/z.burn*100;
-  $("cookbar").style.background=`linear-gradient(90deg,#f7e1b5 0%,#f0c878 ${p1}%,#7ed957 ${p1}%,#7ed957 ${p2}%,#6b3b1f ${p2}%,#1d120b 100%)`;
-  $("barstar").style.left=((p1+p2)/2)+"%";
+  const p1=100/BAR;
+  $("cookbar").style.background=`linear-gradient(90deg,#f7e1b5 0%,#f0c878 ${p1}%,#7ed957 ${p1}%,#7ed957 100%)`;
+  $("barstar").style.left=((p1+100)/2)+"%";
 }
 function sideDiff(){ return phase==="cook1" ? diff.s1 : diff.s2; }
 function startCook(side){
@@ -574,7 +575,7 @@ function startCook(side){
   bubble.style.display="none";
   paintBar(sideDiff());
   elapsed=0; dinged=false; cookStart=performance.now();
-  cg.style.opacity=0; cc.style.opacity=0;
+  cg.style.opacity=0;
   sign.style.display="block"; sign.className=""; sign.textContent = side===1?"🔥 Cooking side 1… 🔥":"🔥 Cooking side 2… 🔥";
   rafId=requestAnimationFrame(tick);
 }
@@ -582,15 +583,15 @@ function tick(now){
   if(phase!=="cook1"&&phase!=="cook2") return;
   const z=sideDiff();
   elapsed=(now-cookStart)/1000;
-  needle.style.left=`calc(${Math.min(elapsed,z.burn)/z.burn*100}% - 3px)`;
+  needle.style.left=`calc(${Math.min(1, elapsed/(z.ps*BAR))*100}% - 3px)`;
   cg.style.opacity=Math.min(1, elapsed/z.ps)*0.75;
-  cc.style.opacity=elapsed>z.pe?Math.min(1,(elapsed-z.pe)/(z.burn-z.pe))*0.92:0;
   if(!dinged && elapsed>=z.ps){
-    dinged=true;
-    if(phase==="cook1"){ ding(); sign.className="alarm"; sign.textContent="⭐ DING! FLIP IT! ⭐"; say("Ding! Flip the crêpe!"); }
-    else { ding(); setTimeout(ding,300); sign.className="alarm"; sign.textContent="⭐ DING DING! PLATE IT! ⭐"; say("Ding ding! Put it on the plate!"); }
+    dinged=true; nextRemind=elapsed+REMIND;
+    sign.className="alarm";
+    sign.textContent = phase==="cook1" ? "⭐ DING! FLIP IT! ⭐" : "⭐ DING DING! PLATE IT! ⭐";
+    callOut();
   }
-  if(elapsed>=z.burn+4){ phase==="cook1"?doFlip():doPlate(); return; }
+  if(dinged && elapsed>=nextRemind){ nextRemind=elapsed+REMIND; callOut(); }
   rafId=requestAnimationFrame(tick);
 }
 stove.addEventListener("click", e=>{
@@ -598,10 +599,14 @@ stove.addEventListener("click", e=>{
   if(phase==="cook1") doFlip();
   else if(phase==="cook2") doPlate();
 });
-function zone(e,z){ return e<z.ps?"pale":(e<=z.pe?"perfect":"burnt"); }
+function callOut(){
+  if(phase==="cook1"){ ding(); say("Ding! Flip the crêpe!"); }
+  else { ding(); setTimeout(ding,300); say("Ding ding! Put it on the plate!"); }
+}
+function zone(e,z){ return e<z.ps?"pale":"perfect"; }
 function doFlip(){
   cancelAnimationFrame(rafId);
-  doneS1={ v:zone(elapsed,diff.s1), g:cg.style.opacity, c:cc.style.opacity };
+  doneS1={ v:zone(elapsed,diff.s1), g:cg.style.opacity };
   say("Whee!");
   crepe.animate([
     { transform:"translateY(0) scaleY(1)" },
@@ -612,13 +617,13 @@ function doFlip(){
 }
 function doPlate(){
   cancelAnimationFrame(rafId);
-  doneS2={ v:zone(elapsed,diff.s2), g:cg.style.opacity, c:cc.style.opacity };
+  doneS2={ v:zone(elapsed,diff.s2), g:cg.style.opacity };
   sign.style.display="none";
   crepe.style.display="none";
   // show on plate with side-1 (presentation side) browning
   plateCrepe.style.display="block";
   plateCrepe.insertAdjacentHTML("afterbegin",
-    `<div class="cbrown cgold" style="opacity:${doneS1.g}"></div><div class="cbrown cchar" style="opacity:${doneS1.c}"></div>`);
+    `<div class="cbrown cgold" style="opacity:${doneS1.g}"></div>`);
   const from=pan.getBoundingClientRect(), to=plateCrepe.getBoundingClientRect();
   plateCrepe.animate([
     { transform:`translate(${from.left-to.left}px, ${from.top-to.top}px) scale(.6)` },
@@ -628,7 +633,6 @@ function doPlate(){
   const vs=[doneS1.v, doneS2.v];
   let stars, msg, voice;
   if(vs.every(v=>v==="perfect")){ stars="⭐⭐⭐"; msg="PARFAIT!"; voice="Parfait! A perfect golden crêpe! Now add yummy toppings!"; }
-  else if(vs.includes("burnt")){ stars="⭐"; msg="A bit crispy — still yummy!"; voice="Ooh, a bit crispy — but still yummy! Add some toppings!"; }
   else { stars="⭐⭐"; msg="Très bien!"; voice="Très bien! Nice crêpe! Now add yummy toppings!"; }
   verdictRow.innerHTML=`${stars}<br><span style="font-size:19px">${msg}</span>`;
   say(voice);
@@ -680,7 +684,7 @@ function applyTopping(id, cx, cy){
 bonBtn.addEventListener("click", ()=>{
   setPhase("done");
   const vs=[doneS1.v,doneS2.v];
-  $("finStars").textContent = vs.every(v=>v==="perfect")?"⭐⭐⭐":(vs.includes("burnt")?"⭐":"⭐⭐");
+  $("finStars").textContent = vs.every(v=>v==="perfect")?"⭐⭐⭐":"⭐⭐";
   $("finale").style.display="flex";
   celebrate();
   say("Bon appétit! What a delicious crêpe! Congratulations, chef Emma!");
